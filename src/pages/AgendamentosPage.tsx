@@ -4,15 +4,21 @@ import {
   confirmarAgendamento,
   cancelarAgendamento,
 } from '../services/agendamentos'
-import type { Agendamento, StatusAgendamento } from '../types'
+import type { Agendamento, StatusAgendamento, ListarAgendamentosParams } from '../types'
 import { ApiError } from '../lib/api'
 import './AgendamentosPage.css'
 
 const statusLabel: Record<StatusAgendamento, string> = {
-  pendente: 'Pendente',
-  confirmado: 'Confirmado',
-  cancelado: 'Cancelado',
+  AGENDADO: 'Agendado',
+  CONFIRMADO: 'Confirmado',
+  CANCELADO: 'Cancelado',
+  REALIZADO: 'Realizado',
 }
+
+const STATUS_OPTIONS: { value: '' | StatusAgendamento; label: string }[] = [
+  { value: '', label: 'Todos' },
+  ...(Object.entries(statusLabel).map(([value, label]) => ({ value: value as StatusAgendamento, label }))),
+]
 
 function formatDate(value: string): string {
   try {
@@ -28,22 +34,59 @@ function formatDate(value: string): string {
   }
 }
 
+function formatDateTime(value: string): string {
+  try {
+    const d = new Date(value)
+    if (Number.isNaN(d.getTime())) return value
+    return d.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    return value
+  }
+}
+
+function displayName(
+  field: Agendamento['user'] | Agendamento['medico'] | Agendamento['clinica']
+): string {
+  if (field == null) return '–'
+  if (typeof field === 'string') return field
+  if (typeof field === 'object' && field !== null && 'name' in field) {
+    return String((field as { name?: string }).name ?? '–')
+  }
+  return '–'
+}
+
 export function AgendamentosPage() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [filtroStatus, setFiltroStatus] = useState<'' | StatusAgendamento>('')
+  const [filtroDataInicio, setFiltroDataInicio] = useState('')
+  const [filtroDataFim, setFiltroDataFim] = useState('')
+
+  const filtros: ListarAgendamentosParams = {}
+  if (filtroStatus) filtros.status = filtroStatus
+  if (filtroDataInicio) filtros.dataInicio = filtroDataInicio
+  if (filtroDataFim) filtros.dataFim = filtroDataFim
 
   async function load() {
     setError('')
     setLoading(true)
     try {
-      const list = await listarAgendamentos()
+      const list = await listarAgendamentos(
+        Object.keys(filtros).length > 0 ? filtros : undefined
+      )
       setAgendamentos(list)
     } catch (err) {
       setError(
         err instanceof ApiError
-          ? err.message
+          ? (err.status === 403 ? 'Sem permissão para este recurso.' : err.message)
           : 'Não foi possível carregar os agendamentos.'
       )
     } finally {
@@ -53,17 +96,22 @@ export function AgendamentosPage() {
 
   useEffect(() => {
     load()
-  }, [])
+  }, [filtroStatus, filtroDataInicio, filtroDataFim])
 
   async function handleConfirmar(id: string) {
     setActionLoading(id)
+    setError('')
     try {
       const updated = await confirmarAgendamento(id)
       setAgendamentos((prev) =>
         prev.map((a) => (a.id === id ? updated : a))
       )
-    } catch {
-      setError('Falha ao confirmar agendamento.')
+    } catch (err) {
+      setError(
+        err instanceof ApiError && err.status === 403
+          ? 'Sem permissão para confirmar este agendamento.'
+          : 'Falha ao confirmar agendamento.'
+      )
     } finally {
       setActionLoading(null)
     }
@@ -71,17 +119,26 @@ export function AgendamentosPage() {
 
   async function handleCancelar(id: string) {
     setActionLoading(id)
+    setError('')
     try {
       const updated = await cancelarAgendamento(id)
       setAgendamentos((prev) =>
         prev.map((a) => (a.id === id ? updated : a))
       )
-    } catch {
-      setError('Falha ao cancelar agendamento.')
+    } catch (err) {
+      setError(
+        err instanceof ApiError && err.status === 403
+          ? 'Sem permissão para cancelar este agendamento.'
+          : 'Falha ao cancelar agendamento.'
+      )
     } finally {
       setActionLoading(null)
     }
   }
+
+  const podeConfirmar = (status: StatusAgendamento) => status === 'AGENDADO'
+  const podeCancelar = (status: StatusAgendamento) =>
+    status === 'AGENDADO' || status === 'CONFIRMADO'
 
   if (loading) {
     return (
@@ -97,6 +154,40 @@ export function AgendamentosPage() {
         <h1>Agendamentos</h1>
       </header>
 
+      <div className="agendamentos-filtros">
+        <label>
+          Status
+          <select
+            value={filtroStatus}
+            onChange={(e) =>
+              setFiltroStatus((e.target.value || '') as '' | StatusAgendamento)
+            }
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value || 'todos'} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Data início (YYYY-MM-DD)
+          <input
+            type="date"
+            value={filtroDataInicio}
+            onChange={(e) => setFiltroDataInicio(e.target.value)}
+          />
+        </label>
+        <label>
+          Data fim (YYYY-MM-DD)
+          <input
+            type="date"
+            value={filtroDataFim}
+            onChange={(e) => setFiltroDataFim(e.target.value)}
+          />
+        </label>
+      </div>
+
       {error && (
         <div className="agendamentos-error" role="alert">
           {error}
@@ -111,9 +202,12 @@ export function AgendamentosPage() {
             <thead>
               <tr>
                 <th>Data</th>
-                <th>Horário</th>
                 <th>Paciente</th>
+                <th>Médico</th>
+                <th>Clínica</th>
+                <th>Tipo</th>
                 <th>Status</th>
+                <th>Criado em</th>
                 <th>Ações</th>
               </tr>
             </thead>
@@ -121,35 +215,44 @@ export function AgendamentosPage() {
               {agendamentos.map((a) => (
                 <tr key={a.id} data-status={a.status}>
                   <td>{formatDate(a.data)}</td>
-                  <td>{a.horario ?? '–'}</td>
-                  <td>{a.paciente ?? '–'}</td>
+                  <td>{displayName(a.user)}</td>
+                  <td>{displayName(a.medico)}</td>
+                  <td>{displayName(a.clinica)}</td>
+                  <td>{a.tipo ?? '–'}</td>
                   <td>
                     <span className={`status-badge status-${a.status}`}>
                       {statusLabel[a.status] ?? a.status}
                     </span>
                   </td>
                   <td>
-                    {a.status === 'pendente' && (
+                    {a.created_at ? formatDateTime(a.created_at) : '–'}
+                  </td>
+                  <td>
+                    {(podeConfirmar(a.status) || podeCancelar(a.status)) && (
                       <div className="agendamentos-actions">
-                        <button
-                          type="button"
-                          className="btn-confirmar"
-                          onClick={() => handleConfirmar(a.id)}
-                          disabled={actionLoading !== null}
-                        >
-                          {actionLoading === a.id ? '…' : 'Confirmar'}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-cancelar"
-                          onClick={() => handleCancelar(a.id)}
-                          disabled={actionLoading !== null}
-                        >
-                          {actionLoading === a.id ? '…' : 'Cancelar'}
-                        </button>
+                        {podeConfirmar(a.status) && (
+                          <button
+                            type="button"
+                            className="btn-confirmar"
+                            onClick={() => handleConfirmar(a.id)}
+                            disabled={actionLoading !== null}
+                          >
+                            {actionLoading === a.id ? '…' : 'Confirmar'}
+                          </button>
+                        )}
+                        {podeCancelar(a.status) && (
+                          <button
+                            type="button"
+                            className="btn-cancelar"
+                            onClick={() => handleCancelar(a.id)}
+                            disabled={actionLoading !== null}
+                          >
+                            {actionLoading === a.id ? '…' : 'Cancelar'}
+                          </button>
+                        )}
                       </div>
                     )}
-                    {a.status !== 'pendente' && '–'}
+                    {!podeConfirmar(a.status) && !podeCancelar(a.status) && '–'}
                   </td>
                 </tr>
               ))}
