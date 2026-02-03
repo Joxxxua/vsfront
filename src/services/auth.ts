@@ -47,7 +47,6 @@ export async function logout(): Promise<void> {
   } else {
     clearAuth()
   }
-  window.location.href = '/login'
 }
 
 export function clearSession(): void {

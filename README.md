@@ -22,6 +22,25 @@ pnpm dev
 
 Abre em `http://localhost:5173`.
 
+## CORS e proxy de desenvolvimento
+
+Se o frontend estiver em outra porta (ex.: `5173`), o backend precisa permitir essa origem no CORS.
+Alternativamente, você pode usar proxy no Vite para evitar problemas de CORS em desenvolvimento.
+
+Exemplo de proxy (ajuste conforme necessário) em `vite.config.ts`:
+
+```ts
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/auth': 'http://localhost:3000',
+      '/agendamento': 'http://localhost:3000',
+    },
+  },
+})
+```
+
 ## Build
 
 ```bash
@@ -30,18 +49,84 @@ pnpm build
 
 ## Autenticação
 
-- Login com as mesmas credenciais usadas no cadastro da clínica (POST `/clinicas/register` na API).
+- Login com as credenciais da clínica em **POST** `/auth/signin`.
 - O JWT é armazenado em `localStorage` e enviado como `Authorization: Bearer <access_token>` em todas as requisições.
-- Em 401 ou ao sair, o token é removido e o usuário é redirecionado para `/login`.
+- Em 401, o app tenta **refresh** em **POST** `/auth/refresh` (Bearer com `refresh_token`). Se falhar, limpa tokens e redireciona para `/login`.
+- No logout, faz **POST** `/auth/logout`, limpa tokens e redireciona para `/login`.
 
 ## Endpoints da API utilizados
 
-- **POST** `/clinicas/login` – login (email + senha)
-- **GET** `/agendamentos` – listar agendamentos da clínica
-- **PATCH** `/agendamentos/:id/confirmar` – confirmar agendamento
-- **PATCH** `/agendamentos/:id/cancelar` – cancelar agendamento
+- **POST** `/auth/signin` – login (email + senha)
+- **POST** `/auth/refresh` – refresh do token (Bearer com `refresh_token`)
+- **POST** `/auth/logout` – logout (Bearer com `access_token`)
+- **GET** `/agendamento` – listar agendamentos da clínica (filtros opcionais)
+- **GET** `/agendamento/:id` – obter um agendamento
+- **PATCH** `/agendamento/:id/confirmar` – confirmar agendamento
+- **PATCH** `/agendamento/:id/cancelar` – cancelar agendamento
 
 Se a sua API NestJS usar outros caminhos ou nomes, edite `src/services/auth.ts` e `src/services/agendamentos.ts`.
+
+## Exemplos de requisição/resposta
+
+### Login
+
+```
+POST /auth/signin
+Content-Type: application/json
+
+{ "email": "admin@clinica.com", "password": "StrongP@ssw0rd!" }
+```
+
+Resposta 200:
+
+```
+{ "access_token": "eyJ...", "refresh_token": "eyJ..." }
+```
+
+### Listar agendamentos
+
+```
+GET /agendamento
+Authorization: Bearer <access_token>
+```
+
+Resposta 200:
+
+```
+[
+  {
+    "id": "uuid",
+    "data": "2026-02-03T10:00:00.000Z",
+    "status": "AGENDADO",
+    "user": { "name": "Paciente" },
+    "medico": { "name": "Dr. Fulano" },
+    "clinica": { "name": "Clínica Exemplo" },
+    "tipo": "Consulta",
+    "created_at": "2026-02-01T10:00:00.000Z",
+    "updated_at": "2026-02-01T10:00:00.000Z"
+  }
+]
+```
+
+### Confirmar agendamento
+
+```
+PATCH /agendamento/:id/confirmar
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{}
+```
+
+### Cancelar agendamento
+
+```
+PATCH /agendamento/:id/cancelar
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{}
+```
 
 ---
 

@@ -12,7 +12,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [authenticated, setAuthenticated] = useState(checkAuth)
 
   useEffect(() => {
-    setAuthenticated(checkAuth())
+    const syncAuth = () => setAuthenticated(checkAuth())
+    syncAuth()
+    window.addEventListener('storage', syncAuth)
+    window.addEventListener('auth:changed', syncAuth)
+    return () => {
+      window.removeEventListener('storage', syncAuth)
+      window.removeEventListener('auth:changed', syncAuth)
+    }
   }, [])
 
   return (

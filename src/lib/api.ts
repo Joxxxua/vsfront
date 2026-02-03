@@ -13,6 +13,51 @@ export class ApiError extends Error {
   }
 }
 
+interface ErrorOverrides {
+  unauthorized?: string
+  forbidden?: string
+  validation?: string
+  server?: string
+}
+
+export function getApiErrorMessage(
+  error: unknown,
+  fallback: string,
+  overrides?: ErrorOverrides
+): string {
+  if (!(error instanceof ApiError)) return fallback
+
+  if (error.status === 401) {
+    return (
+      overrides?.unauthorized ?? 'Sessão expirada. Faça login novamente.'
+    )
+  }
+  if (error.status === 403) {
+    return (
+      overrides?.forbidden ?? 'Você não tem permissão para este recurso.'
+    )
+  }
+  if (error.status >= 500) {
+    return overrides?.server ?? 'Erro inesperado. Tente novamente.'
+  }
+  if (error.status === 400) {
+    const body = error.body
+    if (body && typeof body === 'object') {
+      if ('message' in body) {
+        const msg = (body as { message?: unknown }).message
+        if (Array.isArray(msg)) return msg.map(String).join(', ')
+        if (typeof msg === 'string' && msg.trim()) return msg
+      }
+      if ('errors' in body) {
+        const errs = (body as { errors?: unknown }).errors
+        if (Array.isArray(errs)) return errs.map(String).join(', ')
+      }
+    }
+    return overrides?.validation ?? 'Dados inválidos. Verifique e tente novamente.'
+  }
+  return error.message || fallback
+}
+
 interface AuthTokens {
   access_token: string
   refresh_token: string
@@ -47,7 +92,11 @@ async function fetchWithToken(
     ...(options.headers as Record<string, string>),
   }
   if (token) headers['Authorization'] = `Bearer ${token}`
-  return fetch(`${BASE_URL}${path}`, { ...options, headers })
+  return fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers,
+    cache: options.cache ?? 'no-store',
+  })
 }
 
 async function request<T>(
@@ -66,7 +115,10 @@ async function request<T>(
       }
       if (res.status === 401 || !token) {
         clearAuth()
-        window.location.href = '/login'
+        sessionStorage.setItem(
+          'auth_error',
+          'Sessão expirada. Faça login novamente.'
+        )
         throw new ApiError('Não autorizado', 401)
       }
     } else {

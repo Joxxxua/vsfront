@@ -1,14 +1,16 @@
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { logout } from '../services/auth'
 import './DashboardLayout.css'
 
 export function DashboardLayout() {
   const { setAuthenticated } = useAuth()
+  const navigate = useNavigate()
 
   async function handleLogout() {
     setAuthenticated(false)
     await logout()
+    navigate('/login', { replace: true })
   }
 
   return (

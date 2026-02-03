@@ -4,8 +4,16 @@ import {
   confirmarAgendamento,
   cancelarAgendamento,
 } from '../services/agendamentos'
-import type { Agendamento, StatusAgendamento, ListarAgendamentosParams } from '../types'
-import { ApiError } from '../lib/api'
+import type {
+  Agendamento,
+  StatusAgendamento,
+  ListarAgendamentosParams,
+  UsuarioResumo,
+  MedicoResumo,
+  ClinicaResumo,
+  TipoAgendamentoResumo,
+} from '../types'
+import { getApiErrorMessage } from '../lib/api'
 import './AgendamentosPage.css'
 
 const statusLabel: Record<StatusAgendamento, string> = {
@@ -13,6 +21,12 @@ const statusLabel: Record<StatusAgendamento, string> = {
   CONFIRMADO: 'Confirmado',
   CANCELADO: 'Cancelado',
   REALIZADO: 'Realizado',
+}
+
+const tipoLabel: Record<string, string> = {
+  EXAME: 'Exame',
+  CIRURGIA: 'Cirurgia',
+  CONSULTA: 'Consulta',
 }
 
 const STATUS_OPTIONS: { value: '' | StatusAgendamento; label: string }[] = [
@@ -40,12 +54,33 @@ function formatDateTime(value: string): string {
 }
 
 function displayName(
-  field: Agendamento['user'] | Agendamento['medico'] | Agendamento['clinica']
+  field: UsuarioResumo | MedicoResumo | ClinicaResumo | string | null | undefined
 ): string {
-  if (field == null) return '–'
+  if (!field) return '–'
   if (typeof field === 'string') return field
-  if (typeof field === 'object' && field !== null && 'name' in field) {
-    return String((field as { name?: string }).name ?? '–')
+  if ('nome' in field && field.nome) return String(field.nome)
+  if ('name' in field && field.name) return String(field.name)
+  if ('user' in field && field.user) {
+    const user = field.user as UsuarioResumo | null
+    if (user?.nome) return String(user.nome)
+    if (user?.name) return String(user.name)
+    if (user?.email) return String(user.email)
+  }
+  if ('email' in field && field.email) return String(field.email)
+  return '–'
+}
+
+function formatTipo(tipo: TipoAgendamentoResumo | string | null | undefined): string {
+  if (!tipo) return '–'
+  if (typeof tipo === 'string') {
+    const key = tipo.toUpperCase() as keyof typeof tipoLabel
+    return tipoLabel[key] ?? tipo
+  }
+  if (typeof tipo === 'object') {
+    const nome = tipo.nome ?? tipo.name
+    if (!nome) return '–'
+    const key = nome.toUpperCase() as keyof typeof tipoLabel
+    return tipoLabel[key] ?? nome
   }
   return '–'
 }
@@ -54,6 +89,7 @@ export function AgendamentosPage() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [filtroStatus, setFiltroStatus] = useState<'' | StatusAgendamento>('')
   const [filtroDataInicio, setFiltroDataInicio] = useState('')
@@ -66,6 +102,7 @@ export function AgendamentosPage() {
 
   async function fetchList(withLoading: boolean) {
     setError('')
+    setSuccess('')
     if (withLoading) setLoading(true)
     try {
       const list = await listarAgendamentos(
@@ -74,9 +111,10 @@ export function AgendamentosPage() {
       setAgendamentos(list)
     } catch (err) {
       setError(
-        err instanceof ApiError
-          ? (err.status === 403 ? 'Sem permissão para este recurso.' : err.message)
-          : 'Não foi possível carregar os agendamentos.'
+        getApiErrorMessage(err, 'Erro ao carregar agendamentos.', {
+          forbidden: 'Você não tem permissão para este recurso.',
+          validation: 'Parâmetros inválidos. Verifique os filtros.',
+        })
       )
     } finally {
       if (withLoading) setLoading(false)
@@ -93,19 +131,32 @@ export function AgendamentosPage() {
 
   useEffect(() => {
     load()
-  }, [filtroStatus, filtroDataInicio, filtroDataFim])
+  }, [])
+
+  function handleBuscar() {
+    load()
+  }
+
+  function handleLimpar() {
+    setFiltroStatus('')
+    setFiltroDataInicio('')
+    setFiltroDataFim('')
+    load()
+  }
 
   async function handleConfirmar(id: string) {
     setActionLoading(id)
     setError('')
+    setSuccess('')
     try {
       await confirmarAgendamento(id)
+      setSuccess('Agendamento confirmado.')
       await reloadList()
     } catch (err) {
       setError(
-        err instanceof ApiError && err.status === 403
-          ? 'Sem permissão para confirmar este agendamento.'
-          : 'Falha ao confirmar agendamento.'
+        getApiErrorMessage(err, 'Erro inesperado. Tente novamente.', {
+          forbidden: 'Você não tem permissão para este recurso.',
+        })
       )
     } finally {
       setActionLoading(null)
@@ -115,14 +166,16 @@ export function AgendamentosPage() {
   async function handleCancelar(id: string) {
     setActionLoading(id)
     setError('')
+    setSuccess('')
     try {
       await cancelarAgendamento(id)
+      setSuccess('Agendamento cancelado.')
       await reloadList()
     } catch (err) {
       setError(
-        err instanceof ApiError && err.status === 403
-          ? 'Sem permissão para cancelar este agendamento.'
-          : 'Falha ao cancelar agendamento.'
+        getApiErrorMessage(err, 'Erro inesperado. Tente novamente.', {
+          forbidden: 'Você não tem permissão para este recurso.',
+        })
       )
     } finally {
       setActionLoading(null)
@@ -149,7 +202,7 @@ export function AgendamentosPage() {
 
       <div className="agendamentos-filtros">
         <label>
-          Status
+          Filtrar por status
           <select
             value={filtroStatus}
             onChange={(e) =>
@@ -164,7 +217,7 @@ export function AgendamentosPage() {
           </select>
         </label>
         <label>
-          Data início (YYYY-MM-DD)
+          Data inicial
           <input
             type="date"
             value={filtroDataInicio}
@@ -172,14 +225,28 @@ export function AgendamentosPage() {
           />
         </label>
         <label>
-          Data fim (YYYY-MM-DD)
+          Data final
           <input
             type="date"
             value={filtroDataFim}
             onChange={(e) => setFiltroDataFim(e.target.value)}
           />
         </label>
+        <div className="agendamentos-filtros-actions">
+          <button type="button" onClick={handleBuscar} disabled={loading}>
+            Buscar
+          </button>
+          <button type="button" onClick={handleLimpar} disabled={loading}>
+            Limpar
+          </button>
+        </div>
       </div>
+
+      {success && (
+        <div className="agendamentos-success" role="status">
+          {success}
+        </div>
+      )}
 
       {error && (
         <div className="agendamentos-error" role="alert">
@@ -208,7 +275,7 @@ export function AgendamentosPage() {
                   <td>{formatDateTime(a.data)}</td>
                   <td>{displayName(a.user)}</td>
                   <td>{displayName(a.medico)}</td>
-                  <td>{a.tipo ?? '–'}</td>
+                  <td>{formatTipo(a.tipo)}</td>
                   <td>
                     <span className={`status-badge status-${a.status}`}>
                       {statusLabel[a.status] ?? a.status}

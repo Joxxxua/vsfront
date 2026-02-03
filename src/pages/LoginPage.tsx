@@ -1,14 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { login } from '../services/auth'
 import { useAuth } from '../contexts/AuthContext'
-import { ApiError } from '../lib/api'
+import { getApiErrorMessage } from '../lib/api'
 import './LoginPage.css'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  useEffect(() => {
+    const authError = sessionStorage.getItem('auth_error')
+    if (authError) {
+      setError(authError)
+      sessionStorage.removeItem('auth_error')
+    }
+  }, [])
+
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -30,18 +38,11 @@ export function LoginPage() {
       setAuthenticated(true)
       navigate(from, { replace: true })
     } catch (err) {
-      if (err instanceof ApiError) {
-        const msg = typeof err.body === 'object' && err.body && 'message' in err.body
-          ? String((err.body as { message: unknown }).message)
-          : err.message
-        if (err.status === 401) {
-          setError(msg || 'Invalid credentials')
-        } else {
-          setError(msg || 'Falha no login.')
-        }
-      } else {
-        setError('Falha no login. Tente novamente.')
-      }
+      const msg = getApiErrorMessage(err, 'Erro inesperado. Tente novamente.', {
+        unauthorized: 'Credenciais inválidas.',
+        validation: 'Dados inválidos. Verifique e tente novamente.',
+      })
+      setError(msg)
     } finally {
       setLoading(false)
     }
