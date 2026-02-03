@@ -17,22 +17,11 @@ const statusLabel: Record<StatusAgendamento, string> = {
 
 const STATUS_OPTIONS: { value: '' | StatusAgendamento; label: string }[] = [
   { value: '', label: 'Todos' },
-  ...(Object.entries(statusLabel).map(([value, label]) => ({ value: value as StatusAgendamento, label }))),
+  ...(Object.entries(statusLabel).map(([value, label]) => ({
+    value: value as StatusAgendamento,
+    label,
+  }))),
 ]
-
-function formatDate(value: string): string {
-  try {
-    const d = new Date(value)
-    if (Number.isNaN(d.getTime())) return value
-    return d.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
-  } catch {
-    return value
-  }
-}
 
 function formatDateTime(value: string): string {
   try {
@@ -75,9 +64,9 @@ export function AgendamentosPage() {
   if (filtroDataInicio) filtros.dataInicio = filtroDataInicio
   if (filtroDataFim) filtros.dataFim = filtroDataFim
 
-  async function load() {
+  async function fetchList(withLoading: boolean) {
     setError('')
-    setLoading(true)
+    if (withLoading) setLoading(true)
     try {
       const list = await listarAgendamentos(
         Object.keys(filtros).length > 0 ? filtros : undefined
@@ -90,8 +79,16 @@ export function AgendamentosPage() {
           : 'Não foi possível carregar os agendamentos.'
       )
     } finally {
-      setLoading(false)
+      if (withLoading) setLoading(false)
     }
+  }
+
+  async function load() {
+    await fetchList(true)
+  }
+
+  async function reloadList() {
+    await fetchList(false)
   }
 
   useEffect(() => {
@@ -102,10 +99,8 @@ export function AgendamentosPage() {
     setActionLoading(id)
     setError('')
     try {
-      const updated = await confirmarAgendamento(id)
-      setAgendamentos((prev) =>
-        prev.map((a) => (a.id === id ? updated : a))
-      )
+      await confirmarAgendamento(id)
+      await reloadList()
     } catch (err) {
       setError(
         err instanceof ApiError && err.status === 403
@@ -121,10 +116,8 @@ export function AgendamentosPage() {
     setActionLoading(id)
     setError('')
     try {
-      const updated = await cancelarAgendamento(id)
-      setAgendamentos((prev) =>
-        prev.map((a) => (a.id === id ? updated : a))
-      )
+      await cancelarAgendamento(id)
+      await reloadList()
     } catch (err) {
       setError(
         err instanceof ApiError && err.status === 403
@@ -201,31 +194,25 @@ export function AgendamentosPage() {
           <table className="agendamentos-table">
             <thead>
               <tr>
-                <th>Data</th>
+                <th>Data/Hora</th>
                 <th>Paciente</th>
                 <th>Médico</th>
-                <th>Clínica</th>
                 <th>Tipo</th>
                 <th>Status</th>
-                <th>Criado em</th>
                 <th>Ações</th>
               </tr>
             </thead>
             <tbody>
               {agendamentos.map((a) => (
                 <tr key={a.id} data-status={a.status}>
-                  <td>{formatDate(a.data)}</td>
+                  <td>{formatDateTime(a.data)}</td>
                   <td>{displayName(a.user)}</td>
                   <td>{displayName(a.medico)}</td>
-                  <td>{displayName(a.clinica)}</td>
                   <td>{a.tipo ?? '–'}</td>
                   <td>
                     <span className={`status-badge status-${a.status}`}>
                       {statusLabel[a.status] ?? a.status}
                     </span>
-                  </td>
-                  <td>
-                    {a.created_at ? formatDateTime(a.created_at) : '–'}
                   </td>
                   <td>
                     {(podeConfirmar(a.status) || podeCancelar(a.status)) && (

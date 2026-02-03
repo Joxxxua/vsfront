@@ -34,7 +34,11 @@ export function LoginPage() {
         const msg = typeof err.body === 'object' && err.body && 'message' in err.body
           ? String((err.body as { message: unknown }).message)
           : err.message
-        setError(msg || 'Falha no login.')
+        if (err.status === 401) {
+          setError(msg || 'Invalid credentials')
+        } else {
+          setError(msg || 'Falha no login.')
+        }
       } else {
         setError('Falha no login. Tente novamente.')
       }
