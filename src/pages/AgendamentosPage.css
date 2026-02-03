@@ -1,0 +1,133 @@
+.agendamentos-page {
+  padding: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.agendamentos-loading,
+.agendamentos-empty {
+  text-align: center;
+  color: #94a3b8;
+  padding: 2rem;
+}
+
+.agendamentos-header {
+  margin-bottom: 1.5rem;
+}
+
+.agendamentos-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.agendamentos-error {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  color: #fca5a5;
+  font-size: 0.875rem;
+}
+
+.agendamentos-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.agendamentos-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.agendamentos-table th,
+.agendamentos-table td {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+}
+
+.agendamentos-table th {
+  background: rgba(30, 41, 59, 0.8);
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.agendamentos-table td {
+  color: #e2e8f0;
+}
+
+.agendamentos-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.agendamentos-table tbody tr:hover {
+  background: rgba(51, 65, 85, 0.3);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-pendente {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fcd34d;
+}
+
+.status-confirmado {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+}
+
+.status-cancelado {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.agendamentos-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.agendamentos-actions button {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.agendamentos-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-confirmar {
+  background: rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+
+.btn-confirmar:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.4);
+}
+
+.btn-cancelar {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.btn-cancelar:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.4);
+}
