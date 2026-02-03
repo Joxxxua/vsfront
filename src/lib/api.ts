@@ -1,4 +1,4 @@
-import { getAccessToken, clearAuth } from './auth'
+import { getAccessToken, getRefreshToken, setTokens, clearAuth } from './auth'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -13,28 +13,65 @@ export class ApiError extends Error {
   }
 }
 
+interface AuthTokens {
+  access_token: string
+  refresh_token: string
+}
+
+async function refreshTokens(): Promise<boolean> {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) return false
+  const res = await fetch(`${BASE_URL}/auth/refresh`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${refreshToken}`,
+    },
+  })
+  if (!res.ok) return false
+  const data = (await res.json()) as AuthTokens
+  if (data?.access_token) {
+    setTokens(data.access_token, data.refresh_token)
+    return true
+  }
+  return false
+}
+
+async function fetchWithToken(
+  path: string,
+  options: RequestInit,
+  token: string | null
+): Promise<Response> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+  }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  return fetch(`${BASE_URL}${path}`, { ...options, headers })
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = getAccessToken()
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
-  }
-  if (token) {
-    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`
-  }
-
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers,
-  })
+  let token = getAccessToken()
+  let res = await fetchWithToken(path, options, token)
 
   if (res.status === 401) {
-    clearAuth()
-    window.location.href = '/login'
-    throw new ApiError('Não autorizado', 401)
+    if (token) {
+      const refreshed = await refreshTokens()
+      if (refreshed) {
+        token = getAccessToken()
+        res = await fetchWithToken(path, options, token)
+      }
+      if (res.status === 401 || !token) {
+        clearAuth()
+        window.location.href = '/login'
+        throw new ApiError('Não autorizado', 401)
+      }
+    } else {
+      throw new ApiError('Credenciais inválidas', 401)
+    }
   }
 
   if (!res.ok) {

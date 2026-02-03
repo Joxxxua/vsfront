@@ -1,15 +1,14 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { clearSession } from '../services/auth'
+import { logout } from '../services/auth'
 import './DashboardLayout.css'
 
 export function DashboardLayout() {
   const { setAuthenticated } = useAuth()
 
-  function handleLogout() {
-    clearSession()
+  async function handleLogout() {
     setAuthenticated(false)
-    window.location.href = '/login'
+    await logout()
   }
 
   return (
