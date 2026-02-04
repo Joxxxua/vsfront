@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { logout } from '../services/auth'
 import './DashboardLayout.css'
@@ -6,6 +6,7 @@ import './DashboardLayout.css'
 export function DashboardLayout() {
   const { setAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   async function handleLogout() {
     setAuthenticated(false)
@@ -14,24 +15,35 @@ export function DashboardLayout() {
   }
 
   return (
-    <div className="dashboard-layout">
-      <aside className="dashboard-sidebar">
-        <div className="sidebar-brand">
-          <span className="sidebar-logo">◉</span>
-          <span>Painel Clínica</span>
+    <div className="dashboard-shell">
+      <header className="dashboard-header">
+        <div className="header-left">
+          <div className="brand">
+            <span className="brand-icon" aria-hidden>🌱</span>
+            <div className="brand-text">
+              <strong>Painel Clínica</strong>
+              <span>Gestão do bem-estar da sua equipe</span>
+            </div>
+          </div>
         </div>
-        <nav className="sidebar-nav">
-          <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} end>
-            Agendamentos
-          </NavLink>
-        </nav>
-        <div className="sidebar-footer">
-          <button type="button" className="btn-logout" onClick={handleLogout}>
+        <div className="header-center">
+          <nav className="dashboard-nav">
+            <NavLink to="/" end className={({ isActive }) => `nav-chip ${isActive ? 'active' : ''}`}>
+              Agendamentos
+            </NavLink>
+          </nav>
+        </div>
+        <div className="header-right">
+          <div className="location-tag">
+            <span className="location-dot" />
+            <span className="location-text">Painel • {location.pathname === '/' ? 'Agendamentos' : ''}</span>
+          </div>
+          <button type="button" className="logout-button" onClick={handleLogout}>
             Sair
           </button>
         </div>
-      </aside>
-      <main className="dashboard-main">
+      </header>
+      <main className="dashboard-content">
         <Outlet />
       </main>
     </div>
