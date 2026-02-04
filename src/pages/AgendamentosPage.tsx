@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react'
-import {
-  listarAgendamentos,
-  confirmarAgendamento,
-  cancelarAgendamento,
-} from '../services/agendamentos'
+import { listarAgendamentos, confirmarAgendamento, cancelarAgendamento } from '../services/agendamentos'
 import type {
   Agendamento,
   StatusAgendamento,
@@ -31,31 +27,54 @@ const tipoLabel: Record<string, string> = {
 
 const STATUS_OPTIONS: { value: '' | StatusAgendamento; label: string }[] = [
   { value: '', label: 'Todos' },
-  ...(Object.entries(statusLabel).map(([value, label]) => ({
+  ...Object.entries(statusLabel).map(([value, label]) => ({
     value: value as StatusAgendamento,
     label,
-  }))),
+  })),
 ]
 
-function formatDateTime(value: string): string {
+const categoriasSugestoes = [
+  { label: 'Consultas', icon: '🩺' },
+  { label: 'Exames', icon: '🧪' },
+  { label: 'Cardiologia', icon: '❤️' },
+  { label: 'Pneumologia', icon: '🫁' },
+  { label: 'Fisioterapia', icon: '🦵' },
+]
+
+const destaques = [
+  {
+    titulo: 'Use a tecnologia a favor da sua clínica',
+    descricao: 'Acompanhe confirmações e cancelamentos em tempo real.',
+  },
+  {
+    titulo: 'Organize sua equipe com antecedência',
+    descricao: 'Visualize rapidamente todos os atendimentos pendentes.',
+  },
+]
+
+function formatDate(value: string, options: Intl.DateTimeFormatOptions): string {
   try {
     const d = new Date(value)
-    if (Number.isNaN(d.getTime())) return value
-    return d.toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+    if (Number.isNaN(d.getTime())) return '—'
+    return d.toLocaleString('pt-BR', options)
   } catch {
-    return value
+    return '—'
   }
 }
 
-function displayName(
-  field: UsuarioResumo | MedicoResumo | ClinicaResumo | string | null | undefined
-): string {
+function formatDay(value: string): string {
+  return formatDate(value, {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+  })
+}
+
+function formatHour(value: string): string {
+  return formatDate(value, { hour: '2-digit', minute: '2-digit' })
+}
+
+function displayName(field: UsuarioResumo | MedicoResumo | ClinicaResumo | string | null | undefined): string {
   if (!field) return '–'
   if (typeof field === 'string') return field
   if ('nome' in field && field.nome) return String(field.nome)
@@ -186,61 +205,98 @@ export function AgendamentosPage() {
   const podeCancelar = (status: StatusAgendamento) =>
     status === 'AGENDADO' || status === 'CONFIRMADO'
 
-  if (loading) {
-    return (
-      <div className="agendamentos-page">
-        <div className="agendamentos-loading">Carregando agendamentos…</div>
-      </div>
-    )
-  }
+  const proximoAgendamento = agendamentos
+    .slice()
+    .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
+    .find((agendamento) => new Date(agendamento.data).getTime() >= Date.now()) ?? agendamentos[0]
 
   return (
     <div className="agendamentos-page">
-      <header className="agendamentos-header">
-        <h1>Agendamentos</h1>
+      <header className="agendamentos-hero">
+        <div className="hero-content">
+          <span className="hero-greeting">Bom dia, administrador!</span>
+          <h1 className="hero-title">
+            Bem-vindo ao seu painel <span>saúde+</span>
+          </h1>
+          <p className="hero-subtitle">
+            Acompanhe os atendimentos do dia, confirme horários e mantenha sua clínica organizada.
+          </p>
+        </div>
+        {proximoAgendamento ? (
+          <aside className="hero-highlight">
+            <h2>Próximo atendimento</h2>
+            <div className="highlight-body">
+              <div className="highlight-date">
+                <span>{formatDay(proximoAgendamento.data)}</span>
+                <strong>{formatHour(proximoAgendamento.data)}</strong>
+              </div>
+              <div className="highlight-info">
+                <span className="highlight-label">Profissional</span>
+                <strong>{displayName(proximoAgendamento.medico)}</strong>
+                <span className="highlight-label">Paciente</span>
+                <strong>{displayName(proximoAgendamento.user)}</strong>
+                <div className={`highlight-badge status-${proximoAgendamento.status}`}>
+                  {statusLabel[proximoAgendamento.status] ?? proximoAgendamento.status}
+                </div>
+              </div>
+            </div>
+          </aside>
+        ) : null}
       </header>
 
-      <div className="agendamentos-filtros">
-        <label>
-          Filtrar por status
-          <select
-            value={filtroStatus}
-            onChange={(e) =>
-              setFiltroStatus((e.target.value || '') as '' | StatusAgendamento)
-            }
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value || 'todos'} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Data inicial
-          <input
-            type="date"
-            value={filtroDataInicio}
-            onChange={(e) => setFiltroDataInicio(e.target.value)}
-          />
-        </label>
-        <label>
-          Data final
-          <input
-            type="date"
-            value={filtroDataFim}
-            onChange={(e) => setFiltroDataFim(e.target.value)}
-          />
-        </label>
-        <div className="agendamentos-filtros-actions">
-          <button type="button" onClick={handleBuscar} disabled={loading}>
-            Buscar
-          </button>
-          <button type="button" onClick={handleLimpar} disabled={loading}>
-            Limpar
-          </button>
+      <section className="agendamentos-sugestoes">
+        <div className="categorias">
+          {categoriasSugestoes.map((categoria) => (
+            <button key={categoria.label} type="button" className="categoria-chip">
+              <span aria-hidden>{categoria.icon}</span>
+              {categoria.label}
+            </button>
+          ))}
         </div>
-      </div>
+        <div className="destaques">
+          {destaques.map((item) => (
+            <article key={item.titulo} className="destaque-card">
+              <h3>{item.titulo}</h3>
+              <p>{item.descricao}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="agendamentos-filtros">
+        <div className="filtros-inner">
+          <div className="campo">
+            <label htmlFor="filtro-status">Filtrar por status</label>
+            <select
+              id="filtro-status"
+              value={filtroStatus}
+              onChange={(e) => setFiltroStatus((e.target.value || '') as '' | StatusAgendamento)}
+            >
+              {STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value || 'todos'} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="campo">
+            <label htmlFor="filtro-inicio">Data inicial</label>
+            <input id="filtro-inicio" type="date" value={filtroDataInicio} onChange={(e) => setFiltroDataInicio(e.target.value)} />
+          </div>
+          <div className="campo">
+            <label htmlFor="filtro-fim">Data final</label>
+            <input id="filtro-fim" type="date" value={filtroDataFim} onChange={(e) => setFiltroDataFim(e.target.value)} />
+          </div>
+          <div className="filtros-botoes">
+            <button type="button" onClick={handleBuscar} disabled={loading}>
+              Buscar
+            </button>
+            <button type="button" onClick={handleLimpar} disabled={loading}>
+              Limpar
+            </button>
+          </div>
+        </div>
+      </section>
 
       {success && (
         <div className="agendamentos-success" role="status">
@@ -254,65 +310,64 @@ export function AgendamentosPage() {
         </div>
       )}
 
-      {agendamentos.length === 0 && !error ? (
+      {loading ? (
+        <div className="agendamentos-loading">Carregando agendamentos…</div>
+      ) : agendamentos.length === 0 && !error ? (
         <p className="agendamentos-empty">Nenhum agendamento encontrado.</p>
       ) : (
-        <div className="agendamentos-table-wrap">
-          <table className="agendamentos-table">
-            <thead>
-              <tr>
-                <th>Data/Hora</th>
-                <th>Paciente</th>
-                <th>Médico</th>
-                <th>Tipo</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {agendamentos.map((a) => (
-                <tr key={a.id} data-status={a.status}>
-                  <td>{formatDateTime(a.data)}</td>
-                  <td>{displayName(a.user)}</td>
-                  <td>{displayName(a.medico)}</td>
-                  <td>{formatTipo(a.tipo)}</td>
-                  <td>
-                    <span className={`status-badge status-${a.status}`}>
-                      {statusLabel[a.status] ?? a.status}
-                    </span>
-                  </td>
-                  <td>
-                    {(podeConfirmar(a.status) || podeCancelar(a.status)) && (
-                      <div className="agendamentos-actions">
-                        {podeConfirmar(a.status) && (
-                          <button
-                            type="button"
-                            className="btn-confirmar"
-                            onClick={() => handleConfirmar(a.id)}
-                            disabled={actionLoading !== null}
-                          >
-                            {actionLoading === a.id ? '…' : 'Confirmar'}
-                          </button>
-                        )}
-                        {podeCancelar(a.status) && (
-                          <button
-                            type="button"
-                            className="btn-cancelar"
-                            onClick={() => handleCancelar(a.id)}
-                            disabled={actionLoading !== null}
-                          >
-                            {actionLoading === a.id ? '…' : 'Cancelar'}
-                          </button>
-                        )}
-                      </div>
-                    )}
-                    {!podeConfirmar(a.status) && !podeCancelar(a.status) && '–'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <section className="agendamentos-grid">
+          {agendamentos.map((agendamento) => (
+            <article key={agendamento.id} className={`agendamento-card status-${agendamento.status}`}>
+              <header className="agendamento-card-header">
+                <div>
+                  <span className="card-date">{formatDay(agendamento.data)}</span>
+                  <strong className="card-hour">{formatHour(agendamento.data)}</strong>
+                </div>
+                <span className={`status-chip status-${agendamento.status}`}>
+                  {statusLabel[agendamento.status] ?? agendamento.status}
+                </span>
+              </header>
+              <div className="agendamento-card-body">
+                <div className="card-row">
+                  <span className="label">Paciente</span>
+                  <strong>{displayName(agendamento.user)}</strong>
+                </div>
+                <div className="card-row">
+                  <span className="label">Profissional</span>
+                  <strong>{displayName(agendamento.medico)}</strong>
+                </div>
+                <div className="card-row">
+                  <span className="label">Tipo</span>
+                  <strong>{formatTipo(agendamento.tipo)}</strong>
+                </div>
+              </div>
+              {(podeConfirmar(agendamento.status) || podeCancelar(agendamento.status)) && (
+                <footer className="agendamento-card-footer">
+                  {podeConfirmar(agendamento.status) && (
+                    <button
+                      type="button"
+                      className="btn-confirmar"
+                      onClick={() => handleConfirmar(agendamento.id)}
+                      disabled={actionLoading !== null}
+                    >
+                      {actionLoading === agendamento.id ? 'Confirmando…' : 'Confirmar'}
+                    </button>
+                  )}
+                  {podeCancelar(agendamento.status) && (
+                    <button
+                      type="button"
+                      className="btn-cancelar"
+                      onClick={() => handleCancelar(agendamento.id)}
+                      disabled={actionLoading !== null}
+                    >
+                      {actionLoading === agendamento.id ? 'Cancelando…' : 'Cancelar'}
+                    </button>
+                  )}
+                </footer>
+              )}
+            </article>
+          ))}
+        </section>
       )}
     </div>
   )
