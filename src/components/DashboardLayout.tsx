@@ -27,7 +27,7 @@ export function DashboardLayout() {
             />
             <div className="brand-text">
               <strong>Painel Clínica</strong>
-              <span>Gestão do bem-estar da sua equipe</span>
+              <span>Agendamentos</span>
             </div>
           </div>
         </div>

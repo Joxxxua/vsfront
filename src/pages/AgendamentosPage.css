@@ -1,464 +1,384 @@
 .agendamentos-page {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
-  padding-bottom: 3rem;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
 }
 
 .agendamentos-hero {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.75rem;
-  background: linear-gradient(135deg, rgba(15, 157, 88, 0.1), rgba(15, 157, 88, 0.02));
-  padding: 2.5rem;
-  border-radius: 28px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-}
-
-.agendamentos-hero::after {
-  content: '';
-  position: absolute;
-  width: 320px;
-  height: 320px;
-  background: radial-gradient(circle, rgba(15, 157, 88, 0.25), transparent 60%);
-  right: -60px;
-  top: -120px;
-  pointer-events: none;
+  gap: 1.5rem;
+  background: var(--color-surface);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
 }
 
 .hero-content {
-  position: relative;
-  z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-}
-
-.hero-greeting {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-primary-dark);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.hero-greeting::before {
-  content: '☀️';
+  gap: 0.25rem;
 }
 
 .hero-title {
   margin: 0;
-  font-size: clamp(1.9rem, 3vw, 2.4rem);
-  line-height: 1.1;
+  font-size: 1.5rem;
+  font-weight: 600;
   color: var(--color-text);
-}
-
-.hero-title span {
-  color: var(--color-primary);
 }
 
 .hero-subtitle {
   margin: 0;
-  max-width: 32ch;
+  max-width: 36ch;
   color: var(--color-text-muted);
-  font-size: 1rem;
+  font-size: 0.875rem;
 }
 
 .hero-highlight {
-  position: relative;
-  z-index: 1;
-  padding: 1.75rem;
-  border-radius: 24px;
-  background: #ffffff;
-  box-shadow: var(--shadow-lg);
+  padding: 1.25rem;
+  border-radius: 8px;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .hero-highlight h2 {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.8125rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-primary-dark);
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
 }
 
 .highlight-body {
   display: flex;
-  gap: 1.35rem;
+  gap: 1rem;
   align-items: center;
 }
 
 .highlight-date {
-  min-width: 110px;
-  padding: 1rem;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(15, 157, 88, 0.18), rgba(15, 157, 88, 0.35));
+  min-width: 90px;
+  padding: 0.75rem;
+  border-radius: 4px;
+  background: var(--color-primary);
   color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 500;
   text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.04em;
 }
 
 .highlight-date strong {
-  font-size: 1.35rem;
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 
 .highlight-info {
   display: grid;
-  gap: 0.4rem;
+  gap: 0.25rem;
   color: var(--color-text);
+  font-size: 0.875rem;
 }
 
 .highlight-label {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .highlight-badge {
   align-self: flex-start;
   margin-top: 0.5rem;
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .agendamentos-sugestoes {
-  display: grid;
-  gap: 1.5rem;
+  display: block;
 }
 
 .categorias {
   display: flex;
-  gap: 0.75rem;
-  overflow-x: auto;
-  padding-bottom: 0.35rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .categoria-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  border-radius: 999px;
-  border: none;
-  background: rgba(15, 157, 88, 0.1);
-  color: var(--color-primary-dark);
-  font-weight: 600;
+  padding: 0.5rem 0.875rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 .categoria-chip:hover {
-  transform: translateY(-2px);
-  background: rgba(15, 157, 88, 0.18);
-  box-shadow: 0 12px 24px rgba(15, 157, 88, 0.2);
-}
-
-.destaques {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-
-.destaque-card {
-  padding: 1.5rem;
-  border-radius: 22px;
-  background: #ffffff;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(15, 157, 88, 0.08);
-}
-
-.destaque-card h3 {
-  margin: 0 0 0.6rem;
-  font-size: 1.05rem;
-  color: var(--color-primary-dark);
-}
-
-.destaque-card p {
-  margin: 0;
-  color: var(--color-text-muted);
-  line-height: 1.4;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 .agendamentos-filtros {
-  background: #ffffff;
-  border-radius: 24px;
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(15, 157, 88, 0.08);
+  background: var(--color-surface);
+  border-radius: 8px;
+  padding: 1.25rem;
+  border: 1px solid var(--border-color);
 }
 
 .filtros-inner {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 .campo {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.35rem;
 }
 
 .campo label {
-  font-size: 0.85rem;
+  font-size: 0.8125rem;
   color: var(--color-text-muted);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-weight: 500;
 }
 
 .campo select,
 .campo input[type='date'] {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 16px;
-  border: 1px solid rgba(15, 157, 88, 0.15);
-  background: #f9fefb;
-  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--color-surface);
+  font-size: 0.875rem;
   color: var(--color-text);
-  transition: border 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.15s ease;
 }
 
 .campo select:focus,
 .campo input[type='date']:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(15, 157, 88, 0.18);
-  background: #ffffff;
 }
 
 .filtros-botoes {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  justify-content: flex-end;
+  gap: 0.5rem;
+  align-self: flex-end;
 }
 
 .filtros-botoes button {
-  padding: 0.75rem 1.5rem;
-  border-radius: 16px;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
   border: none;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-}
-
-.filtros-botoes button:first-child {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: var(--color-primary);
   color: #fff;
-  box-shadow: 0 12px 28px rgba(15, 157, 88, 0.3);
+  transition: background 0.15s ease, opacity 0.15s ease;
 }
 
-.filtros-botoes button:last-child {
-  background: rgba(16, 53, 27, 0.08);
-  color: var(--color-primary-dark);
+.filtros-botoes button.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--border-color);
 }
 
 .filtros-botoes button:hover:not(:disabled) {
-  transform: translateY(-2px);
+  opacity: 0.9;
 }
 
-.filtros-botoes button:first-child:hover:not(:disabled) {
-  box-shadow: 0 16px 32px rgba(15, 157, 88, 0.35);
+.filtros-botoes button.btn-secondary:hover:not(:disabled) {
+  background: var(--color-surface-muted);
 }
 
 .filtros-botoes button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 .agendamentos-success,
 .agendamentos-error {
-  padding: 0.95rem 1.2rem;
-  border-radius: 16px;
-  font-size: 0.95rem;
-  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
 }
 
 .agendamentos-success {
-  background: rgba(15, 157, 88, 0.12);
-  border: 1px solid rgba(15, 157, 88, 0.3);
-  color: var(--color-primary-dark);
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
 }
 
 .agendamentos-error {
-  background: rgba(220, 53, 69, 0.12);
-  border: 1px solid rgba(220, 53, 69, 0.3);
-  color: #a31623;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
 }
 
 .agendamentos-loading,
 .agendamentos-empty {
   text-align: center;
-  padding: 2rem;
+  padding: 1.5rem;
   color: var(--color-text-muted);
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: var(--shadow-sm);
+  font-size: 0.875rem;
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
 }
 
 .agendamentos-grid {
   display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 .agendamento-card {
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(15, 157, 88, 0.1);
+  background: var(--color-surface);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.agendamento-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 22px 40px rgba(15, 157, 88, 0.18);
 }
 
 .agendamento-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 1.35rem 1.5rem 0.75rem;
+  align-items: flex-start;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .card-date {
   display: block;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--color-text-muted);
+  text-transform: uppercase;
 }
 
 .card-hour {
-  margin-top: 0.2rem;
-  font-size: 1.25rem;
-  color: var(--color-primary-dark);
+  margin-top: 0.15rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .status-chip {
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .agendamento-card-body {
   display: grid;
-  gap: 0.85rem;
-  padding: 0.5rem 1.5rem 1.35rem;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
 }
 
 .card-row {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.15rem;
 }
 
 .card-row .label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .card-row strong {
-  font-size: 1.05rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
   color: var(--color-text);
 }
 
 .agendamento-card-footer {
   display: flex;
   gap: 0.5rem;
-  padding: 1rem 1.5rem 1.5rem;
+  padding: 0.75rem 1.25rem 1rem;
+  border-top: 1px solid var(--border-color);
 }
 
 .agendamento-card-footer button {
   flex: 1;
-  padding: 0.75rem;
-  border-radius: 14px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
   border: none;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  transition: opacity 0.15s ease;
 }
 
 .agendamento-card-footer button:disabled {
-  opacity: 0.65;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .btn-confirmar {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: var(--color-primary);
   color: #fff;
-  box-shadow: 0 15px 35px rgba(15, 157, 88, 0.28);
 }
 
 .btn-confirmar:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 40px rgba(15, 157, 88, 0.32);
+  opacity: 0.9;
 }
 
 .btn-cancelar {
-  background: rgba(220, 53, 69, 0.08);
-  color: #a31623;
+  background: var(--color-surface);
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
 .btn-cancelar:hover:not(:disabled) {
-  transform: translateY(-2px);
-  background: rgba(220, 53, 69, 0.12);
+  background: #fef2f2;
 }
 
 .status-AGENDADO {
-  background: rgba(251, 191, 36, 0.22);
-  color: #db9a05;
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .status-CONFIRMADO {
-  background: rgba(15, 157, 88, 0.18);
+  background: var(--color-primary-light);
   color: var(--color-primary-dark);
 }
 
 .status-CANCELADO {
-  background: rgba(220, 53, 69, 0.12);
-  color: #a31623;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .status-REALIZADO {
-  background: rgba(46, 125, 50, 0.18);
-  color: #1e7a29;
+  background: #ecfdf5;
+  color: #065f46;
 }
 
 @media (max-width: 720px) {
   .agendamentos-hero {
-    padding: 2rem;
+    padding: 1.25rem;
   }
 
   .highlight-body {
@@ -472,6 +392,7 @@
   }
 
   .filtros-botoes {
+    align-self: stretch;
     justify-content: flex-start;
   }
 
