@@ -34,22 +34,11 @@ const STATUS_OPTIONS: { value: '' | StatusAgendamento; label: string }[] = [
 ]
 
 const categoriasSugestoes = [
-  { label: 'Consultas', icon: '🩺' },
-  { label: 'Exames', icon: '🧪' },
-  { label: 'Cardiologia', icon: '❤️' },
-  { label: 'Pneumologia', icon: '🫁' },
-  { label: 'Fisioterapia', icon: '🦵' },
-]
-
-const destaques = [
-  {
-    titulo: 'Use a tecnologia a favor da sua clínica',
-    descricao: 'Acompanhe confirmações e cancelamentos em tempo real.',
-  },
-  {
-    titulo: 'Organize sua equipe com antecedência',
-    descricao: 'Visualize rapidamente todos os atendimentos pendentes.',
-  },
+  { label: 'Consultas' },
+  { label: 'Exames' },
+  { label: 'Cardiologia' },
+  { label: 'Pneumologia' },
+  { label: 'Fisioterapia' },
 ]
 
 function formatDate(value: string, options: Intl.DateTimeFormatOptions): string {
@@ -214,12 +203,9 @@ export function AgendamentosPage() {
     <div className="agendamentos-page">
       <header className="agendamentos-hero">
         <div className="hero-content">
-          <span className="hero-greeting">Bom dia, administrador!</span>
-          <h1 className="hero-title">
-            Bem-vindo ao seu painel <span>saúde+</span>
-          </h1>
+          <h1 className="hero-title">Agendamentos</h1>
           <p className="hero-subtitle">
-            Acompanhe os atendimentos do dia, confirme horários e mantenha sua clínica organizada.
+            Acompanhe os atendimentos, confirme horários e mantenha a clínica organizada.
           </p>
         </div>
         {proximoAgendamento ? (
@@ -235,9 +221,9 @@ export function AgendamentosPage() {
                 <strong>{displayName(proximoAgendamento.medico)}</strong>
                 <span className="highlight-label">Paciente</span>
                 <strong>{displayName(proximoAgendamento.user)}</strong>
-                <div className={`highlight-badge status-${proximoAgendamento.status}`}>
+                <span className={`highlight-badge status-${proximoAgendamento.status}`}>
                   {statusLabel[proximoAgendamento.status] ?? proximoAgendamento.status}
-                </div>
+                </span>
               </div>
             </div>
           </aside>
@@ -248,17 +234,8 @@ export function AgendamentosPage() {
         <div className="categorias">
           {categoriasSugestoes.map((categoria) => (
             <button key={categoria.label} type="button" className="categoria-chip">
-              <span aria-hidden>{categoria.icon}</span>
               {categoria.label}
             </button>
-          ))}
-        </div>
-        <div className="destaques">
-          {destaques.map((item) => (
-            <article key={item.titulo} className="destaque-card">
-              <h3>{item.titulo}</h3>
-              <p>{item.descricao}</p>
-            </article>
           ))}
         </div>
       </section>
@@ -266,7 +243,7 @@ export function AgendamentosPage() {
       <section className="agendamentos-filtros">
         <div className="filtros-inner">
           <div className="campo">
-            <label htmlFor="filtro-status">Filtrar por status</label>
+            <label htmlFor="filtro-status">Status</label>
             <select
               id="filtro-status"
               value={filtroStatus}
@@ -291,7 +268,7 @@ export function AgendamentosPage() {
             <button type="button" onClick={handleBuscar} disabled={loading}>
               Buscar
             </button>
-            <button type="button" onClick={handleLimpar} disabled={loading}>
+            <button type="button" className="btn-secondary" onClick={handleLimpar} disabled={loading}>
               Limpar
             </button>
           </div>
