@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { listarAgendamentos, confirmarAgendamento, cancelarAgendamento } from '../services/agendamentos'
+import { listarAgendamentos, confirmarAgendamento, cancelarAgendamento, realizarAgendamento } from '../services/agendamentos'
 import type {
   Agendamento,
   StatusAgendamento,
@@ -190,9 +190,31 @@ export function AgendamentosPage() {
     }
   }
 
+  async function handleRealizar(id: string) {
+    setActionLoading(id)
+    setError('')
+    setSuccess('')
+    try {
+      await realizarAgendamento(id)
+      setSuccess('Agendamento marcado como realizado.')
+      await reloadList()
+    } catch (err) {
+      setError(
+        getApiErrorMessage(err, 'Erro inesperado. Tente novamente.', {
+          forbidden: 'Você não tem permissão para este recurso.',
+          validation: 'Só é possível marcar como realizado após a data do agendamento.',
+        })
+      )
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   const podeConfirmar = (status: StatusAgendamento) => status === 'AGENDADO'
   const podeCancelar = (status: StatusAgendamento) =>
     status === 'AGENDADO' || status === 'CONFIRMADO'
+  const podeRealizar = (status: StatusAgendamento, data: string) =>
+    status === 'CONFIRMADO' && new Date(data) <= new Date()
 
   const proximoAgendamento = agendamentos
     .slice()
@@ -318,7 +340,7 @@ export function AgendamentosPage() {
                   <strong>{formatTipo(agendamento.tipo)}</strong>
                 </div>
               </div>
-              {(podeConfirmar(agendamento.status) || podeCancelar(agendamento.status)) && (
+              {(podeConfirmar(agendamento.status) || podeCancelar(agendamento.status) || podeRealizar(agendamento.status, agendamento.data)) && (
                 <footer className="agendamento-card-footer">
                   {podeConfirmar(agendamento.status) && (
                     <button
@@ -328,6 +350,16 @@ export function AgendamentosPage() {
                       disabled={actionLoading !== null}
                     >
                       {actionLoading === agendamento.id ? 'Confirmando…' : 'Confirmar'}
+                    </button>
+                  )}
+                  {podeRealizar(agendamento.status, agendamento.data) && (
+                    <button
+                      type="button"
+                      className="btn-realizar"
+                      onClick={() => handleRealizar(agendamento.id)}
+                      disabled={actionLoading !== null}
+                    >
+                      {actionLoading === agendamento.id ? 'Realizando…' : 'Realizar'}
                     </button>
                   )}
                   {podeCancelar(agendamento.status) && (

@@ -346,6 +346,15 @@
   opacity: 0.9;
 }
 
+.btn-realizar {
+  background: var(--color-primary-dark);
+  color: #fff;
+}
+
+.btn-realizar:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
 .btn-cancelar {
   background: var(--color-surface);
   color: #b91c1c;

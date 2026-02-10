@@ -31,3 +31,7 @@ export async function confirmarAgendamento(id: string): Promise<Agendamento> {
 export async function cancelarAgendamento(id: string): Promise<Agendamento> {
   return api.patch<Agendamento>(`/agendamento/${id}/cancelar`, {})
 }
+
+export async function realizarAgendamento(id: string): Promise<Agendamento> {
+  return api.patch<Agendamento>(`/agendamento/${id}/realizar`, {})
+}
