@@ -9,6 +9,17 @@ import type {
   ClinicaResumo,
   TipoAgendamentoResumo,
 } from '../types'
+
+function especialidadesFromAgendamentos(agendamentos: Agendamento[]): string[] {
+  const set = new Set<string>()
+  for (const a of agendamentos) {
+    const medico = a.medico
+    if (!medico || typeof medico !== 'object') continue
+    const esp = (medico as MedicoResumo).especialidade
+    if (esp && String(esp).trim()) set.add(String(esp).trim())
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+}
 import { getApiErrorMessage } from '../lib/api'
 import './AgendamentosPage.css'
 
