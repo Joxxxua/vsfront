@@ -44,13 +44,6 @@ const STATUS_OPTIONS: { value: '' | StatusAgendamento; label: string }[] = [
   })),
 ]
 
-const categoriasSugestoes = [
-  { label: 'Consultas' },
-  { label: 'Exames' },
-  { label: 'Cardiologia' },
-  { label: 'Pneumologia' },
-  { label: 'Fisioterapia' },
-]
 
 function formatDate(value: string, options: Intl.DateTimeFormatOptions): string {
   try {
@@ -113,6 +106,9 @@ export function AgendamentosPage() {
   const [filtroStatus, setFiltroStatus] = useState<'' | StatusAgendamento>('')
   const [filtroDataInicio, setFiltroDataInicio] = useState('')
   const [filtroDataFim, setFiltroDataFim] = useState('')
+  const [filtroEspecialidade, setFiltroEspecialidade] = useState<string>('')
+
+  const especialidades = especialidadesFromAgendamentos(agendamentos)
 
   const filtros: ListarAgendamentosParams = {}
   if (filtroStatus) filtros.status = filtroStatus
@@ -160,6 +156,7 @@ export function AgendamentosPage() {
     setFiltroStatus('')
     setFiltroDataInicio('')
     setFiltroDataFim('')
+    setFiltroEspecialidade('')
     load()
   }
 
@@ -227,10 +224,19 @@ export function AgendamentosPage() {
   const podeRealizar = (status: StatusAgendamento, data: string) =>
     status === 'CONFIRMADO' && new Date(data) <= new Date()
 
-  const proximoAgendamento = agendamentos
+  const agendamentosFiltrados = filtroEspecialidade
+    ? agendamentos.filter((a) => {
+        const medico = a.medico
+        if (!medico || typeof medico !== 'object') return false
+        const esp = (medico as MedicoResumo).especialidade
+        return esp && String(esp).trim() === filtroEspecialidade
+      })
+    : agendamentos
+
+  const proximoAgendamento = agendamentosFiltrados
     .slice()
     .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
-    .find((agendamento) => new Date(agendamento.data).getTime() >= Date.now()) ?? agendamentos[0]
+    .find((agendamento) => new Date(agendamento.data).getTime() >= Date.now()) ?? agendamentosFiltrados[0]
 
   return (
     <div className="agendamentos-page">
@@ -265,9 +271,21 @@ export function AgendamentosPage() {
 
       <section className="agendamentos-sugestoes">
         <div className="categorias">
-          {categoriasSugestoes.map((categoria) => (
-            <button key={categoria.label} type="button" className="categoria-chip">
-              {categoria.label}
+          <button
+            type="button"
+            className={`categoria-chip${!filtroEspecialidade ? ' active' : ''}`}
+            onClick={() => setFiltroEspecialidade('')}
+          >
+            Todos
+          </button>
+          {especialidades.map((esp) => (
+            <button
+              key={esp}
+              type="button"
+              className={`categoria-chip${filtroEspecialidade === esp ? ' active' : ''}`}
+              onClick={() => setFiltroEspecialidade(esp)}
+            >
+              {esp}
             </button>
           ))}
         </div>
@@ -324,9 +342,11 @@ export function AgendamentosPage() {
         <div className="agendamentos-loading">Carregando agendamentos…</div>
       ) : agendamentos.length === 0 && !error ? (
         <p className="agendamentos-empty">Nenhum agendamento encontrado.</p>
+      ) : agendamentosFiltrados.length === 0 ? (
+        <p className="agendamentos-empty">Nenhum agendamento para a especialidade selecionada.</p>
       ) : (
         <section className="agendamentos-grid">
-          {agendamentos.map((agendamento) => (
+          {agendamentosFiltrados.map((agendamento) => (
             <article key={agendamento.id} className={`agendamento-card status-${agendamento.status}`}>
               <header className="agendamento-card-header">
                 <div>
