@@ -8,6 +8,7 @@ function buildQuery(params: ListarAgendamentosParams): string {
   if (params.dataFim != null) search.set('dataFim', params.dataFim)
   if (params.medicoId != null) search.set('medicoId', params.medicoId)
   if (params.clinicaId != null) search.set('clinicaId', params.clinicaId)
+  if (params.especialidade != null) search.set('especialidade', params.especialidade)
   const q = search.toString()
   return q ? `?${q}` : ''
 }
