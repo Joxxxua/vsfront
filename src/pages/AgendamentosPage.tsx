@@ -114,6 +114,7 @@ export function AgendamentosPage() {
   if (filtroStatus) filtros.status = filtroStatus
   if (filtroDataInicio) filtros.dataInicio = filtroDataInicio
   if (filtroDataFim) filtros.dataFim = filtroDataFim
+  if (filtroEspecialidade) filtros.especialidade = filtroEspecialidade
 
   async function fetchList(withLoading: boolean) {
     setError('')
