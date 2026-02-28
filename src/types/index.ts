@@ -66,4 +66,5 @@ export interface ListarAgendamentosParams {
   dataFim?: string
   medicoId?: string
   clinicaId?: string
+  especialidade?: string
 }
