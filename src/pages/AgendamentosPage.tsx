@@ -97,6 +97,32 @@ function formatTipo(tipo: TipoAgendamentoResumo | string | null | undefined): st
   return '–'
 }
 
+const DAY_NAMES = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB']
+const HOURS_START = 7
+const HOURS_END = 21
+const SLOT_MINUTES = 60
+
+function getWeekStart(d: Date): Date {
+  const date = new Date(d)
+  const day = date.getDay()
+  date.setDate(date.getDate() - day)
+  date.setHours(0, 0, 0, 0)
+  return date
+}
+
+function formatWeekRange(weekStart: Date): string {
+  const end = new Date(weekStart)
+  end.setDate(end.getDate() + 6)
+  const monthShort = (x: Date) => x.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
+  return `${weekStart.getDate()} de ${monthShort(weekStart)} - ${end.getDate()} de ${monthShort(end)}`
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+}
+
+type ViewMode = 'lista' | 'semanal'
+
 export function AgendamentosPage() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [loading, setLoading] = useState(true)
@@ -107,6 +133,8 @@ export function AgendamentosPage() {
   const [filtroDataInicio, setFiltroDataInicio] = useState('')
   const [filtroDataFim, setFiltroDataFim] = useState('')
   const [filtroEspecialidade, setFiltroEspecialidade] = useState<string>('')
+  const [viewMode, setViewMode] = useState<ViewMode>('lista')
+  const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
 
   const especialidades = especialidadesFromAgendamentos(agendamentos)
 
@@ -160,6 +188,31 @@ export function AgendamentosPage() {
     setFiltroEspecialidade('')
     load()
   }
+
+  function goToToday() {
+    setWeekStart(getWeekStart(new Date()))
+  }
+
+  function goToPrevWeek() {
+    const next = new Date(weekStart)
+    next.setDate(next.getDate() - 7)
+    setWeekStart(next)
+  }
+
+  function goToNextWeek() {
+    const next = new Date(weekStart)
+    next.setDate(next.getDate() + 7)
+    setWeekStart(next)
+  }
+
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekEnd.getDate() + 7)
+  const agendamentosSemana = agendamentosFiltrados.filter((a) => {
+    const d = new Date(a.data)
+    return d >= weekStart && d < weekEnd
+  })
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
 
   async function handleConfirmar(id: string) {
     setActionLoading(id)
@@ -290,6 +343,22 @@ export function AgendamentosPage() {
             </button>
           ))}
         </div>
+        <div className="view-toggle">
+          <button
+            type="button"
+            className={`view-toggle-btn${viewMode === 'lista' ? ' active' : ''}`}
+            onClick={() => setViewMode('lista')}
+          >
+            Lista
+          </button>
+          <button
+            type="button"
+            className={`view-toggle-btn${viewMode === 'semanal' ? ' active' : ''}`}
+            onClick={() => setViewMode('semanal')}
+          >
+            Agenda Semanal
+          </button>
+        </div>
       </section>
 
       <section className="agendamentos-filtros">
@@ -341,6 +410,91 @@ export function AgendamentosPage() {
 
       {loading ? (
         <div className="agendamentos-loading">Carregando agendamentos…</div>
+      ) : viewMode === 'semanal' ? (
+        <>
+          <section className="agenda-semanal-header">
+            <h2 className="agenda-semanal-title">Agenda Semanal</h2>
+            <button type="button" className="agenda-btn-hoje" onClick={goToToday}>
+              Hoje
+            </button>
+            <div className="agenda-week-nav">
+              <button type="button" className="agenda-nav-btn" onClick={goToPrevWeek} aria-label="Semana anterior">
+                ‹
+              </button>
+              <span className="agenda-week-range">{formatWeekRange(weekStart)}</span>
+              <button type="button" className="agenda-nav-btn" onClick={goToNextWeek} aria-label="Próxima semana">
+                ›
+              </button>
+            </div>
+            <div className="agenda-view-label">Semanal</div>
+            <button type="button" className="agenda-btn-novo">
+              + Novo Agendamento
+            </button>
+          </section>
+          <section className="agenda-semanal-grid-wrap">
+            <div className="agenda-semanal-grid">
+              <div className="agenda-time-col">
+                <div className="agenda-corner" />
+                {Array.from({ length: HOURS_END - HOURS_START }, (_, i) => (
+                  <div key={i} className="agenda-time-slot">
+                    {String(HOURS_START + i).padStart(2, '0')}:00
+                  </div>
+                ))}
+              </div>
+              <div className="agenda-days-col">
+                {Array.from({ length: 7 }, (_, dayIndex) => {
+                  const d = new Date(weekStart)
+                  d.setDate(d.getDate() + dayIndex)
+                  const isToday = isSameDay(d, today)
+                  return (
+                    <div key={dayIndex} className="agenda-day-col">
+                      <div className={`agenda-day-header${isToday ? ' is-today' : ''}`}>
+                        <span className="agenda-day-name">{DAY_NAMES[dayIndex]}</span>
+                        <span className="agenda-day-num">{d.getDate()}</span>
+                      </div>
+                      {Array.from({ length: HOURS_END - HOURS_START }, (_, hourIndex) => (
+                        <div key={hourIndex} className="agenda-cell" />
+                      ))}
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="agenda-blocks-layer">
+                {agendamentosSemana.map((agendamento) => {
+                  const d = new Date(agendamento.data)
+                  const dayIndex = (d.getDay() + 7) % 7
+                  const hours = d.getHours() + d.getMinutes() / 60
+                  const slotIndex = hours - HOURS_START
+                  if (slotIndex < 0 || slotIndex >= HOURS_END - HOURS_START) return null
+                  const duration = 1
+                  const top = (slotIndex / (HOURS_END - HOURS_START)) * 100
+                  const height = (duration / (HOURS_END - HOURS_START)) * 100
+                  const endHour = d.getHours() + duration
+                  const endMin = d.getMinutes()
+                  const endStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`
+                  const startStr = formatHour(agendamento.data)
+                  return (
+                    <div
+                      key={agendamento.id}
+                      className={`agenda-block status-${agendamento.status}`}
+                      style={{
+                        left: `${(100 * dayIndex) / 7}%`,
+                        width: `${100 / 7}%`,
+                        top: `${top}%`,
+                        height: `${height}%`,
+                      }}
+                      title={`${displayName(agendamento.user)} • ${displayName(agendamento.medico)}`}
+                    >
+                      <span className="agenda-block-name">{displayName(agendamento.user)}</span>
+                      <span className="agenda-block-time">{startStr} - {endStr}</span>
+                      <span className="agenda-block-prof">{displayName(agendamento.medico)}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </section>
+        </>
       ) : agendamentos.length === 0 && !error ? (
         <p className="agendamentos-empty">Nenhum agendamento encontrado.</p>
       ) : agendamentosFiltrados.length === 0 ? (

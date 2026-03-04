@@ -1,6 +1,8 @@
 import { getAccessToken, getRefreshToken, setTokens, clearAuth } from './auth'
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const BASE_URL =
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.DEV ? 'https://api.vidasaudavel.app' : 'http://localhost:3000')
 
 export class ApiError extends Error {
   status: number

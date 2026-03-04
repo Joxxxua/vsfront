@@ -60,6 +60,39 @@
   border-color: var(--color-primary);
 }
 
+/* Mostrar senha: checkbox integrado ao layout, abaixo do campo */
+.login-show-password {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0.25rem 0 0;
+  padding: 0.75rem 0 1rem;
+  border-top: 1px solid var(--border-color);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  transition: color 0.15s ease;
+}
+
+.login-show-password:hover {
+  color: var(--color-primary);
+}
+
+.login-show-password input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.login-show-password span {
+  user-select: none;
+  letter-spacing: 0.01em;
+}
+
 .login-error {
   margin: 0 0 1rem;
   padding: 0.625rem 0.75rem;
