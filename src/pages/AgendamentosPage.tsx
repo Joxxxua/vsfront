@@ -100,7 +100,6 @@ function formatTipo(tipo: TipoAgendamentoResumo | string | null | undefined): st
 const DAY_NAMES = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB']
 const HOURS_START = 7
 const HOURS_END = 21
-const SLOT_MINUTES = 60
 
 function getWeekStart(d: Date): Date {
   const date = new Date(d)
@@ -205,6 +204,15 @@ export function AgendamentosPage() {
     setWeekStart(next)
   }
 
+  const agendamentosFiltrados = filtroEspecialidade
+    ? agendamentos.filter((a) => {
+        const medico = a.medico
+        if (!medico || typeof medico !== 'object') return false
+        const esp = (medico as MedicoResumo).especialidade
+        return esp && String(esp).trim() === filtroEspecialidade
+      })
+    : agendamentos
+
   const weekEnd = new Date(weekStart)
   weekEnd.setDate(weekEnd.getDate() + 7)
   const agendamentosSemana = agendamentosFiltrados.filter((a) => {
@@ -277,15 +285,6 @@ export function AgendamentosPage() {
     status === 'AGENDADO' || status === 'CONFIRMADO'
   const podeRealizar = (status: StatusAgendamento, data: string) =>
     status === 'CONFIRMADO' && new Date(data) <= new Date()
-
-  const agendamentosFiltrados = filtroEspecialidade
-    ? agendamentos.filter((a) => {
-        const medico = a.medico
-        if (!medico || typeof medico !== 'object') return false
-        const esp = (medico as MedicoResumo).especialidade
-        return esp && String(esp).trim() === filtroEspecialidade
-      })
-    : agendamentos
 
   const proximoAgendamento = agendamentosFiltrados
     .slice()
