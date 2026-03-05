@@ -636,41 +636,21 @@
 .agenda-block {
   position: absolute;
   margin: 2px;
-  padding: 0.5rem 0.6rem;
+  padding: 0.4rem 0.5rem;
   border-radius: 6px;
-  overflow: visible;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-height: 2.5rem;
-  transform-origin: center center;
+  transition: box-shadow 0.15s ease;
+  min-height: 2rem;
   z-index: 1;
 }
 
 .agenda-block:hover {
-  transform: scale(1.15);
-  z-index: 10;
-  box-shadow: 0 8px 24px rgba(15, 53, 27, 0.2);
-}
-
-.agenda-block:hover .agenda-block-name,
-.agenda-block:hover .agenda-block-time,
-.agenda-block:hover .agenda-block-prof {
-  font-size: 1rem;
-  font-weight: 600;
-  opacity: 1;
-}
-
-.agenda-block:hover .agenda-block-name {
-  font-size: 1.0625rem;
-}
-
-.agenda-block:hover .agenda-block-prof {
-  font-size: 1rem;
-  font-weight: 600;
+  box-shadow: var(--shadow-md);
 }
 
 .agenda-block.status-AGENDADO {
@@ -697,43 +677,10 @@
   border: 1px solid #fecaca;
 }
 
-.agenda-block-label {
-  font-size: 0;
-  opacity: 0;
-  line-height: 0;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  transition: font-size 0.2s ease, opacity 0.2s ease;
-}
-
-.agenda-block:hover .agenda-block-label {
-  font-size: 0.6875rem;
-  opacity: 0.9;
-  line-height: 1.2;
-}
-
-.agenda-block-name {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: font-size 0.2s ease;
-}
-
 .agenda-block-time {
   font-size: 0.8125rem;
+  font-weight: 600;
   opacity: 0.95;
-  transition: font-size 0.2s ease;
-}
-
-.agenda-block-prof {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  opacity: 0.9;
-  transition: font-size 0.2s ease, font-weight 0.2s ease;
 }
 
 /* Modal de detalhes ao clicar no bloco da agenda */

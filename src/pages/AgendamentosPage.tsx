@@ -82,6 +82,20 @@ function displayName(field: UsuarioResumo | MedicoResumo | ClinicaResumo | strin
   return '–'
 }
 
+/** Para paciente (user): prefere nome; se só tiver email, mostra a parte antes do @ em vez do email inteiro. */
+function displayUserName(user: UsuarioResumo | string | null | undefined): string {
+  if (!user) return '–'
+  if (typeof user === 'string') return user
+  if (user.nome) return String(user.nome)
+  if (user.name) return String(user.name)
+  if (user.email) {
+    const email = String(user.email)
+    const at = email.indexOf('@')
+    return at > 0 ? email.slice(0, at) : email
+  }
+  return '–'
+}
+
 function formatTipo(tipo: TipoAgendamentoResumo | string | null | undefined): string {
   if (!tipo) return '–'
   if (typeof tipo === 'string') {
@@ -313,7 +327,7 @@ export function AgendamentosPage() {
                 <span className="highlight-label">Profissional</span>
                 <strong>{displayName(proximoAgendamento.medico)}</strong>
                 <span className="highlight-label">Paciente</span>
-                <strong>{displayName(proximoAgendamento.user)}</strong>
+                <strong>{displayUserName(proximoAgendamento.user)}</strong>
                 <span className={`highlight-badge status-${proximoAgendamento.status}`}>
                   {statusLabel[proximoAgendamento.status] ?? proximoAgendamento.status}
                 </span>
@@ -485,7 +499,7 @@ export function AgendamentosPage() {
                         top: `${top}%`,
                         height: `${height}%`,
                       }}
-                      title="Passe o mouse para ver paciente e médico; clique para confirmar ou cancelar"
+                      title="Clique para ver paciente, médico e confirmar ou cancelar"
                       onClick={() => setAgendamentoDetalhe(agendamento)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -494,11 +508,7 @@ export function AgendamentosPage() {
                         }
                       }}
                     >
-                      <span className="agenda-block-label">Paciente</span>
-                      <span className="agenda-block-name">{displayName(agendamento.user)}</span>
                       <span className="agenda-block-time">{startStr} - {endStr}</span>
-                      <span className="agenda-block-label">Médico</span>
-                      <span className="agenda-block-prof">{displayName(agendamento.medico)}</span>
                     </div>
                   )
                 })}
@@ -526,7 +536,7 @@ export function AgendamentosPage() {
               <div className="agendamento-card-body">
                 <div className="card-row">
                   <span className="label">Paciente</span>
-                  <strong>{displayName(agendamento.user)}</strong>
+                  <strong>{displayUserName(agendamento.user)}</strong>
                 </div>
                 <div className="card-row">
                   <span className="label">Profissional</span>
@@ -589,7 +599,7 @@ export function AgendamentosPage() {
             <div className="agenda-detalhe-body">
               <p>
                 <strong>Paciente</strong>
-                <span className="agenda-detalhe-value">{displayName(agendamentoDetalhe.user)}</span>
+                <span className="agenda-detalhe-value">{displayUserName(agendamentoDetalhe.user)}</span>
               </p>
               <p>
                 <strong>Médico</strong>
