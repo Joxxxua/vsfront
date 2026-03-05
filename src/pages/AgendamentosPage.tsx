@@ -134,6 +134,7 @@ export function AgendamentosPage() {
   const [filtroEspecialidade, setFiltroEspecialidade] = useState<string>('')
   const [viewMode, setViewMode] = useState<ViewMode>('lista')
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
+  const [agendamentoDetalhe, setAgendamentoDetalhe] = useState<Agendamento | null>(null)
 
   const especialidades = especialidadesFromAgendamentos(agendamentos)
 
@@ -475,6 +476,8 @@ export function AgendamentosPage() {
                   return (
                     <div
                       key={agendamento.id}
+                      role="button"
+                      tabIndex={0}
                       className={`agenda-block status-${agendamento.status}`}
                       style={{
                         left: `${(100 * dayIndex) / 7}%`,
@@ -482,7 +485,14 @@ export function AgendamentosPage() {
                         top: `${top}%`,
                         height: `${height}%`,
                       }}
-                      title={`${displayName(agendamento.user)} • ${displayName(agendamento.medico)}`}
+                      title={`${displayName(agendamento.user)} • ${displayName(agendamento.medico)} — Clique para ver detalhes`}
+                      onClick={() => setAgendamentoDetalhe(agendamento)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setAgendamentoDetalhe(agendamento)
+                        }
+                      }}
                     >
                       <span className="agenda-block-name">{displayName(agendamento.user)}</span>
                       <span className="agenda-block-time">{startStr} - {endStr}</span>
@@ -562,6 +572,87 @@ export function AgendamentosPage() {
             </article>
           ))}
         </section>
+      )}
+
+      {agendamentoDetalhe && (
+        <div
+          className="agenda-detalhe-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="agenda-detalhe-title"
+          onClick={() => setAgendamentoDetalhe(null)}
+        >
+          <div className="agenda-detalhe-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 id="agenda-detalhe-title">Detalhes do agendamento</h2>
+            <div className="agenda-detalhe-body">
+              <p><strong>Paciente:</strong> {displayName(agendamentoDetalhe.user)}</p>
+              <p><strong>Médico:</strong> {displayName(agendamentoDetalhe.medico)}</p>
+              <p><strong>Data e horário:</strong> {formatDay(agendamentoDetalhe.data)} às {formatHour(agendamentoDetalhe.data)}</p>
+              <p><strong>Status:</strong>{' '}
+                <span className={`agenda-detalhe-status status-${agendamentoDetalhe.status}`}>
+                  {statusLabel[agendamentoDetalhe.status] ?? agendamentoDetalhe.status}
+                </span>
+              </p>
+              <p><strong>Tipo:</strong> {formatTipo(agendamentoDetalhe.tipo)}</p>
+            </div>
+            <div className="agenda-detalhe-actions">
+              {podeConfirmar(agendamentoDetalhe.status) && (
+                <button
+                  type="button"
+                  className="btn-confirmar"
+                  disabled={actionLoading !== null}
+                  onClick={async () => {
+                    try {
+                      await handleConfirmar(agendamentoDetalhe.id)
+                      setAgendamentoDetalhe(null)
+                    } catch {
+                      /* erro já exibido na página */
+                    }
+                  }}
+                >
+                  {actionLoading === agendamentoDetalhe.id ? 'Confirmando…' : 'Confirmar'}
+                </button>
+              )}
+              {podeRealizar(agendamentoDetalhe.status, agendamentoDetalhe.data) && (
+                <button
+                  type="button"
+                  className="btn-realizar"
+                  disabled={actionLoading !== null}
+                  onClick={async () => {
+                    try {
+                      await handleRealizar(agendamentoDetalhe.id)
+                      setAgendamentoDetalhe(null)
+                    } catch {
+                      /* erro já exibido na página */
+                    }
+                  }}
+                >
+                  {actionLoading === agendamentoDetalhe.id ? 'Realizando…' : 'Realizar'}
+                </button>
+              )}
+              {podeCancelar(agendamentoDetalhe.status) && (
+                <button
+                  type="button"
+                  className="btn-cancelar"
+                  disabled={actionLoading !== null}
+                  onClick={async () => {
+                    try {
+                      await handleCancelar(agendamentoDetalhe.id)
+                      setAgendamentoDetalhe(null)
+                    } catch {
+                      /* erro já exibido na página */
+                    }
+                  }}
+                >
+                  {actionLoading === agendamentoDetalhe.id ? 'Cancelando…' : 'Cancelar'}
+                </button>
+              )}
+              <button type="button" className="agenda-detalhe-fechar" onClick={() => setAgendamentoDetalhe(null)}>
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
