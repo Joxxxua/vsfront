@@ -8,6 +8,7 @@ import './LoginPage.css'
 export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   useEffect(() => {
     const authError = sessionStorage.getItem('auth_error')
@@ -38,10 +39,13 @@ export function LoginPage() {
       setAuthenticated(true)
       navigate(from, { replace: true })
     } catch (err) {
-      const msg = getApiErrorMessage(err, 'Erro inesperado. Tente novamente.', {
+      let msg = getApiErrorMessage(err, 'Erro inesperado. Tente novamente.', {
         unauthorized: 'Credenciais inválidas.',
         validation: 'Dados inválidos. Verifique e tente novamente.',
       })
+      if (msg === 'Erro inesperado. Tente novamente.' && err instanceof TypeError) {
+        msg = 'Não foi possível conectar à API. Em localhost, verifique se a API libera CORS para este endereço ou use o front em produção.'
+      }
       setError(msg)
     } finally {
       setLoading(false)
@@ -68,13 +72,21 @@ export function LoginPage() {
           <label>
             Senha
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Digite sua senha"
               required
               autoComplete="current-password"
             />
+          </label>
+          <label className="login-show-password">
+            <input
+              type="checkbox"
+              checked={showPassword}
+              onChange={(e) => setShowPassword(e.target.checked)}
+            />
+            <span>Mostrar senha</span>
           </label>
           {error && <p className="login-error">{error}</p>}
           <button type="submit" disabled={loading}>

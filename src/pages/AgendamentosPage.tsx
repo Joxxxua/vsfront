@@ -82,6 +82,42 @@ function displayName(field: UsuarioResumo | MedicoResumo | ClinicaResumo | strin
   return '–'
 }
 
+/** Para paciente (user): prefere nome; se só tiver email, mostra a parte antes do @ em vez do email inteiro. */
+function displayUserName(user: UsuarioResumo | string | null | undefined): string {
+  if (!user) return '–'
+  if (typeof user === 'string') return user
+  if (user.nome) return String(user.nome)
+  if (user.name) return String(user.name)
+  if (user.email) {
+    const email = String(user.email)
+    const at = email.indexOf('@')
+    return at > 0 ? email.slice(0, at) : email
+  }
+  return '–'
+}
+
+/** Para médico: prefere nome; se só tiver email, mostra a parte antes do @ em vez do email inteiro. */
+function displayMedicoName(medico: MedicoResumo | string | null | undefined): string {
+  if (!medico) return '–'
+  if (typeof medico === 'string') return medico
+  if (medico.nome) return String(medico.nome)
+  if (medico.name) return String(medico.name)
+  const user = medico.user as UsuarioResumo | null | undefined
+  if (user?.nome) return String(user.nome)
+  if (user?.name) return String(user.name)
+  if (user?.email) {
+    const email = String(user.email)
+    const at = email.indexOf('@')
+    return at > 0 ? email.slice(0, at) : email
+  }
+  if (medico.email) {
+    const email = String(medico.email)
+    const at = email.indexOf('@')
+    return at > 0 ? email.slice(0, at) : email
+  }
+  return '–'
+}
+
 function formatTipo(tipo: TipoAgendamentoResumo | string | null | undefined): string {
   if (!tipo) return '–'
   if (typeof tipo === 'string') {
@@ -97,6 +133,31 @@ function formatTipo(tipo: TipoAgendamentoResumo | string | null | undefined): st
   return '–'
 }
 
+const DAY_NAMES = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB']
+const HOURS_START = 7
+const HOURS_END = 21
+
+function getWeekStart(d: Date): Date {
+  const date = new Date(d)
+  const day = date.getDay()
+  date.setDate(date.getDate() - day)
+  date.setHours(0, 0, 0, 0)
+  return date
+}
+
+function formatWeekRange(weekStart: Date): string {
+  const end = new Date(weekStart)
+  end.setDate(end.getDate() + 6)
+  const monthShort = (x: Date) => x.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
+  return `${weekStart.getDate()} de ${monthShort(weekStart)} - ${end.getDate()} de ${monthShort(end)}`
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+}
+
+type ViewMode = 'lista' | 'semanal'
+
 export function AgendamentosPage() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [loading, setLoading] = useState(true)
@@ -107,6 +168,9 @@ export function AgendamentosPage() {
   const [filtroDataInicio, setFiltroDataInicio] = useState('')
   const [filtroDataFim, setFiltroDataFim] = useState('')
   const [filtroEspecialidade, setFiltroEspecialidade] = useState<string>('')
+  const [viewMode, setViewMode] = useState<ViewMode>('lista')
+  const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
+  const [agendamentoDetalhe, setAgendamentoDetalhe] = useState<Agendamento | null>(null)
 
   const especialidades = especialidadesFromAgendamentos(agendamentos)
 
@@ -160,6 +224,40 @@ export function AgendamentosPage() {
     setFiltroEspecialidade('')
     load()
   }
+
+  function goToToday() {
+    setWeekStart(getWeekStart(new Date()))
+  }
+
+  function goToPrevWeek() {
+    const next = new Date(weekStart)
+    next.setDate(next.getDate() - 7)
+    setWeekStart(next)
+  }
+
+  function goToNextWeek() {
+    const next = new Date(weekStart)
+    next.setDate(next.getDate() + 7)
+    setWeekStart(next)
+  }
+
+  const agendamentosFiltrados = filtroEspecialidade
+    ? agendamentos.filter((a) => {
+        const medico = a.medico
+        if (!medico || typeof medico !== 'object') return false
+        const esp = (medico as MedicoResumo).especialidade
+        return esp && String(esp).trim() === filtroEspecialidade
+      })
+    : agendamentos
+
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekEnd.getDate() + 7)
+  const agendamentosSemana = agendamentosFiltrados.filter((a) => {
+    const d = new Date(a.data)
+    return d >= weekStart && d < weekEnd
+  })
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
 
   async function handleConfirmar(id: string) {
     setActionLoading(id)
@@ -225,15 +323,6 @@ export function AgendamentosPage() {
   const podeRealizar = (status: StatusAgendamento, data: string) =>
     status === 'CONFIRMADO' && new Date(data) <= new Date()
 
-  const agendamentosFiltrados = filtroEspecialidade
-    ? agendamentos.filter((a) => {
-        const medico = a.medico
-        if (!medico || typeof medico !== 'object') return false
-        const esp = (medico as MedicoResumo).especialidade
-        return esp && String(esp).trim() === filtroEspecialidade
-      })
-    : agendamentos
-
   const proximoAgendamento = agendamentosFiltrados
     .slice()
     .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
@@ -258,9 +347,9 @@ export function AgendamentosPage() {
               </div>
               <div className="highlight-info">
                 <span className="highlight-label">Profissional</span>
-                <strong>{displayName(proximoAgendamento.medico)}</strong>
+                <strong>{displayMedicoName(proximoAgendamento.medico)}</strong>
                 <span className="highlight-label">Paciente</span>
-                <strong>{displayName(proximoAgendamento.user)}</strong>
+                <strong>{displayUserName(proximoAgendamento.user)}</strong>
                 <span className={`highlight-badge status-${proximoAgendamento.status}`}>
                   {statusLabel[proximoAgendamento.status] ?? proximoAgendamento.status}
                 </span>
@@ -289,6 +378,22 @@ export function AgendamentosPage() {
               {esp}
             </button>
           ))}
+        </div>
+        <div className="view-toggle">
+          <button
+            type="button"
+            className={`view-toggle-btn${viewMode === 'lista' ? ' active' : ''}`}
+            onClick={() => setViewMode('lista')}
+          >
+            Lista
+          </button>
+          <button
+            type="button"
+            className={`view-toggle-btn${viewMode === 'semanal' ? ' active' : ''}`}
+            onClick={() => setViewMode('semanal')}
+          >
+            Agenda Semanal
+          </button>
         </div>
       </section>
 
@@ -341,6 +446,100 @@ export function AgendamentosPage() {
 
       {loading ? (
         <div className="agendamentos-loading">Carregando agendamentos…</div>
+      ) : viewMode === 'semanal' ? (
+        <>
+          <section className="agenda-semanal-header">
+            <h2 className="agenda-semanal-title">Agenda Semanal</h2>
+            <button type="button" className="agenda-btn-hoje" onClick={goToToday}>
+              Hoje
+            </button>
+            <div className="agenda-week-nav">
+              <button type="button" className="agenda-nav-btn" onClick={goToPrevWeek} aria-label="Semana anterior">
+                ‹
+              </button>
+              <span className="agenda-week-range">{formatWeekRange(weekStart)}</span>
+              <button type="button" className="agenda-nav-btn" onClick={goToNextWeek} aria-label="Próxima semana">
+                ›
+              </button>
+            </div>
+            <div className="agenda-view-label">Semanal</div>
+            <button type="button" className="agenda-btn-novo">
+              + Novo Agendamento
+            </button>
+          </section>
+          <section className="agenda-semanal-grid-wrap">
+            <div className="agenda-semanal-grid">
+              <div className="agenda-time-col">
+                <div className="agenda-corner" />
+                {Array.from({ length: HOURS_END - HOURS_START }, (_, i) => (
+                  <div key={i} className="agenda-time-slot">
+                    {String(HOURS_START + i).padStart(2, '0')}:00
+                  </div>
+                ))}
+              </div>
+              <div className="agenda-days-col">
+                {Array.from({ length: 7 }, (_, dayIndex) => {
+                  const d = new Date(weekStart)
+                  d.setDate(d.getDate() + dayIndex)
+                  const isToday = isSameDay(d, today)
+                  return (
+                    <div key={dayIndex} className="agenda-day-col">
+                      <div className={`agenda-day-header${isToday ? ' is-today' : ''}`}>
+                        <span className="agenda-day-name">{DAY_NAMES[dayIndex]}</span>
+                        <span className="agenda-day-num">{d.getDate()}</span>
+                      </div>
+                      {Array.from({ length: HOURS_END - HOURS_START }, (_, hourIndex) => (
+                        <div key={hourIndex} className="agenda-cell" />
+                      ))}
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="agenda-blocks-layer">
+                {agendamentosSemana.map((agendamento) => {
+                  const d = new Date(agendamento.data)
+                  const dayIndex = (d.getDay() + 7) % 7
+                  const hours = d.getHours() + d.getMinutes() / 60
+                  const slotIndex = hours - HOURS_START
+                  if (slotIndex < 0 || slotIndex >= HOURS_END - HOURS_START) return null
+                  const duration = 1
+                  const top = (slotIndex / (HOURS_END - HOURS_START)) * 100
+                  const height = (duration / (HOURS_END - HOURS_START)) * 100
+                  const endHour = d.getHours() + duration
+                  const endMin = d.getMinutes()
+                  const endStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`
+                  const startStr = formatHour(agendamento.data)
+                  return (
+                    <div
+                      key={agendamento.id}
+                      role="button"
+                      tabIndex={0}
+                      className={`agenda-block status-${agendamento.status}`}
+                      style={{
+                        left: `${(100 * dayIndex) / 7}%`,
+                        width: `${100 / 7}%`,
+                        top: `${top}%`,
+                        height: `${height}%`,
+                      }}
+                      title="Clique para ver detalhes e confirmar ou cancelar"
+                      onClick={() => setAgendamentoDetalhe(agendamento)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setAgendamentoDetalhe(agendamento)
+                        }
+                      }}
+                    >
+                      <span className="agenda-block-time">{startStr} - {endStr}</span>
+                      <span className="agenda-block-expand">Paciente: {displayUserName(agendamento.user)}</span>
+                      <span className="agenda-block-expand">Médico: {displayMedicoName(agendamento.medico)}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </section>
+        </>
       ) : agendamentos.length === 0 && !error ? (
         <p className="agendamentos-empty">Nenhum agendamento encontrado.</p>
       ) : agendamentosFiltrados.length === 0 ? (
@@ -361,11 +560,11 @@ export function AgendamentosPage() {
               <div className="agendamento-card-body">
                 <div className="card-row">
                   <span className="label">Paciente</span>
-                  <strong>{displayName(agendamento.user)}</strong>
+                  <strong>{displayUserName(agendamento.user)}</strong>
                 </div>
                 <div className="card-row">
                   <span className="label">Profissional</span>
-                  <strong>{displayName(agendamento.medico)}</strong>
+                  <strong>{displayMedicoName(agendamento.medico)}</strong>
                 </div>
                 <div className="card-row">
                   <span className="label">Tipo</span>
@@ -409,6 +608,100 @@ export function AgendamentosPage() {
             </article>
           ))}
         </section>
+      )}
+
+      {agendamentoDetalhe && (
+        <div
+          className="agenda-detalhe-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="agenda-detalhe-title"
+          onClick={() => setAgendamentoDetalhe(null)}
+        >
+          <div className="agenda-detalhe-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 id="agenda-detalhe-title">Detalhes do agendamento</h2>
+            <div className="agenda-detalhe-body">
+              <p>
+                <strong>Paciente</strong>
+                <span className="agenda-detalhe-value">{displayUserName(agendamentoDetalhe.user)}</span>
+              </p>
+              <p>
+                <strong>Médico</strong>
+                <span className="agenda-detalhe-value">{displayMedicoName(agendamentoDetalhe.medico)}</span>
+              </p>
+              <p>
+                <strong>Data e horário</strong>
+                <span className="agenda-detalhe-value">{formatDay(agendamentoDetalhe.data)} às {formatHour(agendamentoDetalhe.data)}</span>
+              </p>
+              <p>
+                <strong>Status</strong>
+                <span className={`agenda-detalhe-status status-${agendamentoDetalhe.status}`}>
+                  {statusLabel[agendamentoDetalhe.status] ?? agendamentoDetalhe.status}
+                </span>
+              </p>
+              <p>
+                <strong>Tipo</strong>
+                <span className="agenda-detalhe-value">{formatTipo(agendamentoDetalhe.tipo)}</span>
+              </p>
+            </div>
+            <div className="agenda-detalhe-actions">
+              {podeConfirmar(agendamentoDetalhe.status) && (
+                <button
+                  type="button"
+                  className="btn-confirmar"
+                  disabled={actionLoading !== null}
+                  onClick={async () => {
+                    try {
+                      await handleConfirmar(agendamentoDetalhe.id)
+                      setAgendamentoDetalhe(null)
+                    } catch {
+                      /* erro já exibido na página */
+                    }
+                  }}
+                >
+                  {actionLoading === agendamentoDetalhe.id ? 'Confirmando…' : 'Confirmar'}
+                </button>
+              )}
+              {podeRealizar(agendamentoDetalhe.status, agendamentoDetalhe.data) && (
+                <button
+                  type="button"
+                  className="btn-realizar"
+                  disabled={actionLoading !== null}
+                  onClick={async () => {
+                    try {
+                      await handleRealizar(agendamentoDetalhe.id)
+                      setAgendamentoDetalhe(null)
+                    } catch {
+                      /* erro já exibido na página */
+                    }
+                  }}
+                >
+                  {actionLoading === agendamentoDetalhe.id ? 'Realizando…' : 'Realizar'}
+                </button>
+              )}
+              {podeCancelar(agendamentoDetalhe.status) && (
+                <button
+                  type="button"
+                  className="btn-cancelar"
+                  disabled={actionLoading !== null}
+                  onClick={async () => {
+                    try {
+                      await handleCancelar(agendamentoDetalhe.id)
+                      setAgendamentoDetalhe(null)
+                    } catch {
+                      /* erro já exibido na página */
+                    }
+                  }}
+                >
+                  {actionLoading === agendamentoDetalhe.id ? 'Cancelando…' : 'Cancelar'}
+                </button>
+              )}
+              <button type="button" className="agenda-detalhe-fechar" onClick={() => setAgendamentoDetalhe(null)}>
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

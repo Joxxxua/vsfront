@@ -2,7 +2,9 @@ import { setTokens, clearAuth } from '../lib/auth'
 import { ApiError } from '../lib/api'
 import type { LoginCredentials, AuthResponse } from '../types'
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const BASE_URL =
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.DEV ? 'https://api.vidasaudavel.app' : 'http://localhost:3000')
 
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
   const res = await fetch(`${BASE_URL}/auth/signin`, {
