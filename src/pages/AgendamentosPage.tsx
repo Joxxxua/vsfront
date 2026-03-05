@@ -531,10 +531,8 @@ export function AgendamentosPage() {
                       }}
                     >
                       <span className="agenda-block-time">{startStr} - {endStr}</span>
-                      <div className="agenda-block-tooltip" role="tooltip">
-                        <span className="agenda-block-tooltip-line">Paciente: {displayUserName(agendamento.user)}</span>
-                        <span className="agenda-block-tooltip-line">Médico: {displayMedicoName(agendamento.medico)}</span>
-                      </div>
+                      <span className="agenda-block-expand">Paciente: {displayUserName(agendamento.user)}</span>
+                      <span className="agenda-block-expand">Médico: {displayMedicoName(agendamento.medico)}</span>
                     </div>
                   )
                 })}

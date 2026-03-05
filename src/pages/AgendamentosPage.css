@@ -640,18 +640,23 @@
   border-radius: 6px;
   overflow: visible;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.15rem;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.15s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, min-height 0.2s ease;
   min-height: 2rem;
   z-index: 1;
+  transform-origin: center center;
 }
 
 .agenda-block:hover {
-  box-shadow: var(--shadow-md);
+  transform: scale(1.25);
+  box-shadow: 0 6px 20px rgba(15, 53, 27, 0.2);
   z-index: 10;
+  min-height: 3.5rem;
 }
 
 .agenda-block.status-AGENDADO {
@@ -684,36 +689,21 @@
   opacity: 0.95;
 }
 
-.agenda-block-tooltip {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 6px;
-  padding: 0.5rem 0.75rem;
-  background: #1f2937;
-  color: #fff;
-  border-radius: 8px;
-  font-size: 0.8125rem;
-  white-space: nowrap;
+.agenda-block-expand {
+  font-size: 0.6875rem;
+  font-weight: 500;
   opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-  z-index: 20;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  max-height: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  transition: opacity 0.2s ease, max-height 0.2s ease;
 }
 
-.agenda-block:hover .agenda-block-tooltip {
-  opacity: 1;
-}
-
-.agenda-block-tooltip-line {
-  display: block;
-  line-height: 1.4;
-}
-
-.agenda-block-tooltip-line + .agenda-block-tooltip-line {
-  margin-top: 0.2rem;
+.agenda-block:hover .agenda-block-expand {
+  opacity: 0.95;
+  max-height: 1.2em;
 }
 
 /* Modal de detalhes ao clicar no bloco da agenda */
