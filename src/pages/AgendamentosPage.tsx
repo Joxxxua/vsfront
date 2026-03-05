@@ -6,7 +6,6 @@ import type {
   ListarAgendamentosParams,
   UsuarioResumo,
   MedicoResumo,
-  ClinicaResumo,
   TipoAgendamentoResumo,
 } from '../types'
 
@@ -65,21 +64,6 @@ function formatDay(value: string): string {
 
 function formatHour(value: string): string {
   return formatDate(value, { hour: '2-digit', minute: '2-digit' })
-}
-
-function displayName(field: UsuarioResumo | MedicoResumo | ClinicaResumo | string | null | undefined): string {
-  if (!field) return '–'
-  if (typeof field === 'string') return field
-  if ('nome' in field && field.nome) return String(field.nome)
-  if ('name' in field && field.name) return String(field.name)
-  if ('user' in field && field.user) {
-    const user = field.user as UsuarioResumo | null
-    if (user?.nome) return String(user.nome)
-    if (user?.name) return String(user.name)
-    if (user?.email) return String(user.email)
-  }
-  if ('email' in field && field.email) return String(field.email)
-  return '–'
 }
 
 /** Para paciente (user): prefere nome; se só tiver email, mostra a parte antes do @ em vez do email inteiro. */
