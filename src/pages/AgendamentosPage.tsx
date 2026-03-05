@@ -485,7 +485,7 @@ export function AgendamentosPage() {
                         top: `${top}%`,
                         height: `${height}%`,
                       }}
-                      title={`${displayName(agendamento.user)} • ${displayName(agendamento.medico)} — Clique para ver detalhes`}
+                      title="Passe o mouse para ver paciente e médico; clique para confirmar ou cancelar"
                       onClick={() => setAgendamentoDetalhe(agendamento)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -494,8 +494,10 @@ export function AgendamentosPage() {
                         }
                       }}
                     >
+                      <span className="agenda-block-label">Paciente</span>
                       <span className="agenda-block-name">{displayName(agendamento.user)}</span>
                       <span className="agenda-block-time">{startStr} - {endStr}</span>
+                      <span className="agenda-block-label">Médico</span>
                       <span className="agenda-block-prof">{displayName(agendamento.medico)}</span>
                     </div>
                   )
