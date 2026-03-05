@@ -585,15 +585,28 @@ export function AgendamentosPage() {
           <div className="agenda-detalhe-modal" onClick={(e) => e.stopPropagation()}>
             <h2 id="agenda-detalhe-title">Detalhes do agendamento</h2>
             <div className="agenda-detalhe-body">
-              <p><strong>Paciente:</strong> {displayName(agendamentoDetalhe.user)}</p>
-              <p><strong>Médico:</strong> {displayName(agendamentoDetalhe.medico)}</p>
-              <p><strong>Data e horário:</strong> {formatDay(agendamentoDetalhe.data)} às {formatHour(agendamentoDetalhe.data)}</p>
-              <p><strong>Status:</strong>{' '}
+              <p>
+                <strong>Paciente</strong>
+                <span className="agenda-detalhe-value">{displayName(agendamentoDetalhe.user)}</span>
+              </p>
+              <p>
+                <strong>Médico</strong>
+                <span className="agenda-detalhe-value">{displayName(agendamentoDetalhe.medico)}</span>
+              </p>
+              <p>
+                <strong>Data e horário</strong>
+                <span className="agenda-detalhe-value">{formatDay(agendamentoDetalhe.data)} às {formatHour(agendamentoDetalhe.data)}</span>
+              </p>
+              <p>
+                <strong>Status</strong>
                 <span className={`agenda-detalhe-status status-${agendamentoDetalhe.status}`}>
                   {statusLabel[agendamentoDetalhe.status] ?? agendamentoDetalhe.status}
                 </span>
               </p>
-              <p><strong>Tipo:</strong> {formatTipo(agendamentoDetalhe.tipo)}</p>
+              <p>
+                <strong>Tipo</strong>
+                <span className="agenda-detalhe-value">{formatTipo(agendamentoDetalhe.tipo)}</span>
+              </p>
             </div>
             <div className="agenda-detalhe-actions">
               {podeConfirmar(agendamentoDetalhe.status) && (
