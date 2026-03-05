@@ -638,7 +638,7 @@
   margin: 2px;
   padding: 0.4rem 0.5rem;
   border-radius: 6px;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -651,6 +651,7 @@
 
 .agenda-block:hover {
   box-shadow: var(--shadow-md);
+  z-index: 10;
 }
 
 .agenda-block.status-AGENDADO {
@@ -681,6 +682,38 @@
   font-size: 0.8125rem;
   font-weight: 600;
   opacity: 0.95;
+}
+
+.agenda-block-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 6px;
+  padding: 0.5rem 0.75rem;
+  background: #1f2937;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.agenda-block:hover .agenda-block-tooltip {
+  opacity: 1;
+}
+
+.agenda-block-tooltip-line {
+  display: block;
+  line-height: 1.4;
+}
+
+.agenda-block-tooltip-line + .agenda-block-tooltip-line {
+  margin-top: 0.2rem;
 }
 
 /* Modal de detalhes ao clicar no bloco da agenda */

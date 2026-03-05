@@ -96,6 +96,28 @@ function displayUserName(user: UsuarioResumo | string | null | undefined): strin
   return '–'
 }
 
+/** Para médico: prefere nome; se só tiver email, mostra a parte antes do @ em vez do email inteiro. */
+function displayMedicoName(medico: MedicoResumo | string | null | undefined): string {
+  if (!medico) return '–'
+  if (typeof medico === 'string') return medico
+  if (medico.nome) return String(medico.nome)
+  if (medico.name) return String(medico.name)
+  const user = medico.user as UsuarioResumo | null | undefined
+  if (user?.nome) return String(user.nome)
+  if (user?.name) return String(user.name)
+  if (user?.email) {
+    const email = String(user.email)
+    const at = email.indexOf('@')
+    return at > 0 ? email.slice(0, at) : email
+  }
+  if (medico.email) {
+    const email = String(medico.email)
+    const at = email.indexOf('@')
+    return at > 0 ? email.slice(0, at) : email
+  }
+  return '–'
+}
+
 function formatTipo(tipo: TipoAgendamentoResumo | string | null | undefined): string {
   if (!tipo) return '–'
   if (typeof tipo === 'string') {
@@ -325,7 +347,7 @@ export function AgendamentosPage() {
               </div>
               <div className="highlight-info">
                 <span className="highlight-label">Profissional</span>
-                <strong>{displayName(proximoAgendamento.medico)}</strong>
+                <strong>{displayMedicoName(proximoAgendamento.medico)}</strong>
                 <span className="highlight-label">Paciente</span>
                 <strong>{displayUserName(proximoAgendamento.user)}</strong>
                 <span className={`highlight-badge status-${proximoAgendamento.status}`}>
@@ -499,7 +521,7 @@ export function AgendamentosPage() {
                         top: `${top}%`,
                         height: `${height}%`,
                       }}
-                      title="Clique para ver paciente, médico e confirmar ou cancelar"
+                      title="Clique para ver detalhes e confirmar ou cancelar"
                       onClick={() => setAgendamentoDetalhe(agendamento)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -509,6 +531,10 @@ export function AgendamentosPage() {
                       }}
                     >
                       <span className="agenda-block-time">{startStr} - {endStr}</span>
+                      <div className="agenda-block-tooltip" role="tooltip">
+                        <span className="agenda-block-tooltip-line">Paciente: {displayUserName(agendamento.user)}</span>
+                        <span className="agenda-block-tooltip-line">Médico: {displayMedicoName(agendamento.medico)}</span>
+                      </div>
                     </div>
                   )
                 })}
@@ -540,7 +566,7 @@ export function AgendamentosPage() {
                 </div>
                 <div className="card-row">
                   <span className="label">Profissional</span>
-                  <strong>{displayName(agendamento.medico)}</strong>
+                  <strong>{displayMedicoName(agendamento.medico)}</strong>
                 </div>
                 <div className="card-row">
                   <span className="label">Tipo</span>
@@ -603,7 +629,7 @@ export function AgendamentosPage() {
               </p>
               <p>
                 <strong>Médico</strong>
-                <span className="agenda-detalhe-value">{displayName(agendamentoDetalhe.medico)}</span>
+                <span className="agenda-detalhe-value">{displayMedicoName(agendamentoDetalhe.medico)}</span>
               </p>
               <p>
                 <strong>Data e horário</strong>
