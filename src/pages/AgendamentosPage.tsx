@@ -487,8 +487,16 @@ export function AgendamentosPage() {
                   const slotIndex = hours - HOURS_START
                   if (slotIndex < 0 || slotIndex >= HOURS_END - HOURS_START) return null
                   const duration = 1
-                  const top = (slotIndex / (HOURS_END - HOURS_START)) * 100
-                  const height = (duration / (HOURS_END - HOURS_START)) * 100
+                  const totalSlots = HOURS_END - HOURS_START
+                  const slotTop = (slotIndex / totalSlots) * 100
+                  const slotHeight = (duration / totalSlots) * 100
+                  const colWidth = 100 / 7
+                  const insetV = 12
+                  const insetH = 8
+                  const blockTop = slotTop + (slotHeight * insetV) / 100
+                  const blockHeight = slotHeight * (100 - 2 * insetV) / 100
+                  const blockLeft = (100 * dayIndex) / 7 + (colWidth * insetH) / 100
+                  const blockWidth = colWidth * (100 - 2 * insetH) / 100
                   const endHour = d.getHours() + duration
                   const endMin = d.getMinutes()
                   const endStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`
@@ -500,10 +508,10 @@ export function AgendamentosPage() {
                       tabIndex={0}
                       className={`agenda-block status-${agendamento.status}`}
                       style={{
-                        left: `${(100 * dayIndex) / 7}%`,
-                        width: `${100 / 7}%`,
-                        top: `${top}%`,
-                        height: `${height}%`,
+                        left: `${blockLeft}%`,
+                        width: `${blockWidth}%`,
+                        top: `${blockTop}%`,
+                        height: `${blockHeight}%`,
                       }}
                       title="Clique para ver detalhes e confirmar ou cancelar"
                       onClick={() => setAgendamentoDetalhe(agendamento)}

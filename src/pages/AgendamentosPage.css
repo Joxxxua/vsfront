@@ -529,7 +529,7 @@
 .agenda-semanal-grid {
   display: grid;
   grid-template-columns: 56px repeat(7, minmax(0, 1fr));
-  grid-template-rows: 48px repeat(14, 33px);
+  grid-template-rows: 52px repeat(14, 48px);
   min-width: 640px;
   position: relative;
 }
@@ -544,18 +544,18 @@
 }
 
 .agenda-corner {
-  flex: 0 0 48px;
+  flex: 0 0 52px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .agenda-time-slot {
-  flex: 0 0 33px;
-  min-height: 33px;
+  flex: 0 0 48px;
+  min-height: 48px;
   box-sizing: border-box;
   padding: 0 0.5rem;
   display: flex;
   align-items: center;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--color-text-muted);
   border-bottom: 1px solid var(--border-color);
 }
@@ -565,7 +565,7 @@
   grid-row: 1 / -1;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: 48px repeat(14, 33px);
+  grid-template-rows: 52px repeat(14, 48px);
 }
 
 .agenda-day-col {
@@ -579,7 +579,7 @@
 }
 
 .agenda-day-header {
-  flex: 0 0 48px;
+  flex: 0 0 52px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -587,7 +587,7 @@
   gap: 0.15rem;
   border-bottom: 1px solid var(--border-color);
   background: var(--color-surface-muted);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--color-text-muted);
 }
 
@@ -616,8 +616,8 @@
 }
 
 .agenda-cell {
-  flex: 0 0 33px;
-  min-height: 33px;
+  flex: 0 0 48px;
+  min-height: 48px;
   box-sizing: border-box;
   border-bottom: 1px solid var(--border-color);
 }
@@ -635,9 +635,9 @@
 
 .agenda-block {
   position: absolute;
-  margin: 2px;
-  padding: 0.5rem 0.6rem;
-  border-radius: 8px;
+  margin: 0;
+  padding: 0.35rem 0.45rem;
+  border-radius: 6px;
   overflow: visible;
   display: flex;
   flex-direction: column;
