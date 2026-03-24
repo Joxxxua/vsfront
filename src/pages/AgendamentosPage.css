@@ -623,6 +623,10 @@
   border-right: 1px solid #94a3b8;
 }
 
+.agenda-day-col:last-child .agenda-cell {
+  border-right: none;
+}
+
 .agenda-blocks-layer {
   grid-column: 2 / -1;
   grid-row: 2 / -1;
