@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { DashboardLayout } from './components/DashboardLayout'
 import { LoginPage } from './pages/LoginPage'
 import { AgendamentosPage } from './pages/AgendamentosPage'
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage'
 import './App.css'
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/privacidade" element={<PrivacyPolicyPage />} />
           <Route
             path="/"
             element={
