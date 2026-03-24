@@ -1,0 +1,130 @@
+import './PrivacyPolicyPage.css'
+
+export function PrivacyPolicyPage() {
+  return (
+    <div className="privacy-page">
+      <h1>Política de Privacidade</h1>
+      <p>
+        <strong>Última atualização:</strong> 24 de março de 2026
+      </p>
+
+      <p>
+        Esta Política de Privacidade descreve como as informações dos usuários são coletadas, usadas,
+        armazenadas e protegidas no aplicativo de agendamento de consultas e exames (doravante
+        denominado “Aplicativo”).
+      </p>
+
+      <p>Ao utilizar o Aplicativo, você concorda com os termos desta Política.</p>
+
+      <section>
+        <h2>1. Informações Coletadas</h2>
+        <h3>1.1 Informações fornecidas pelo usuário</h3>
+        <ul>
+          <li>Nome completo</li>
+          <li>CPF</li>
+          <li>E-mail</li>
+          <li>Número de telefone</li>
+          <li>Data de nascimento</li>
+          <li>Dados de login (e-mail e senha)</li>
+        </ul>
+        <h3>1.2 Informações de uso</h3>
+        <ul>
+          <li>Histórico de agendamentos</li>
+          <li>Preferências de clínicas e médicos</li>
+          <li>Registros de pagamentos realizados</li>
+        </ul>
+        <h3>1.3 Informações de pagamento</h3>
+        <ul>
+          <li>Dados relacionados a pagamentos via Pix (identificadores da transação)</li>
+        </ul>
+        <p>
+          <strong>Importante:</strong> Não armazenamos senhas bancárias ou dados sensíveis da sua
+          conta.
+        </p>
+      </section>
+
+      <section>
+        <h2>2. Como Utilizamos Suas Informações</h2>
+        <ul>
+          <li>Criar e gerenciar sua conta</li>
+          <li>Permitir login e autenticação</li>
+          <li>Buscar clínicas, médicos e exames disponíveis</li>
+          <li>Realizar e gerenciar agendamentos</li>
+          <li>Processar pagamentos via Pix</li>
+          <li>Enviar confirmações e notificações</li>
+          <li>Melhorar a experiência do usuário</li>
+          <li>Garantir segurança e prevenção contra fraudes</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3. Compartilhamento de Dados</h2>
+        <p>Seus dados podem ser compartilhados com:</p>
+        <ul>
+          <li>Clínicas e profissionais de saúde, para viabilizar o agendamento</li>
+          <li>Serviços de pagamento, para processar transações via Pix</li>
+          <li>Autoridades legais, quando exigido por lei</li>
+        </ul>
+        <p>Não vendemos suas informações pessoais a terceiros.</p>
+      </section>
+
+      <section>
+        <h2>4. Armazenamento e Segurança</h2>
+        <ul>
+          <li>Criptografia de informações sensíveis</li>
+          <li>Controle de acesso restrito</li>
+          <li>Monitoramento contra acessos não autorizados</li>
+        </ul>
+        <p>
+          Seus dados são armazenados apenas pelo tempo necessário para cumprir as finalidades desta
+          Política.
+        </p>
+      </section>
+
+      <section>
+        <h2>5. Direitos do Usuário</h2>
+        <ul>
+          <li>Acessar seus dados</li>
+          <li>Corrigir informações incorretas</li>
+          <li>Solicitar a exclusão da sua conta</li>
+          <li>Revogar o consentimento para uso de dados</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>6. Cookies e Tecnologias de Rastreamento</h2>
+        <p>
+          O Aplicativo pode utilizar cookies e tecnologias similares para melhorar o desempenho,
+          personalizar a experiência e analisar o uso da plataforma.
+        </p>
+      </section>
+
+      <section>
+        <h2>7. Retenção de Dados</h2>
+        <p>
+          Seus dados serão mantidos enquanto sua conta estiver ativa ou conforme necessário para
+          cumprir obrigações legais.
+        </p>
+      </section>
+
+      <section>
+        <h2>8. Alterações nesta Política</h2>
+        <p>Podemos atualizar esta Política periodicamente. Recomendamos a revisão regular deste documento.</p>
+      </section>
+
+      <section>
+        <h2>9. Contato</h2>
+        <p>Em caso de dúvidas:</p>
+        <ul>
+          <li>E-mail: seuemail@dominio.com</li>
+          <li>Suporte: seu canal de atendimento</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>10. Aceite</h2>
+        <p>Ao utilizar o Aplicativo, você declara estar ciente e de acordo com esta Política de Privacidade.</p>
+      </section>
+    </div>
+  )
+}
