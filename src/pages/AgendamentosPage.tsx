@@ -168,7 +168,7 @@ export function AgendamentosPage() {
 
   const filtros: ListarAgendamentosParams = {}
   if (filtroStatus) filtros.status = filtroStatus
-  if (filtroDataInicio) filtros.dataInicio = filtroDataInicio
+  filtros.dataInicio = filtroDataInicio || formatDateForDateInput(new Date())
   if (filtroDataFim) filtros.dataFim = filtroDataFim
   if (filtroEspecialidade) filtros.especialidade = filtroEspecialidade
 
