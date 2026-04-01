@@ -157,7 +157,7 @@ export function AgendamentosPage() {
   const [success, setSuccess] = useState('')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [filtroStatus, setFiltroStatus] = useState<'' | StatusAgendamento>('')
-  const [filtroDataInicio, setFiltroDataInicio] = useState('')
+  const [filtroDataInicio, setFiltroDataInicio] = useState(() => formatDateForDateInput(new Date()))
   const [filtroDataFim, setFiltroDataFim] = useState('')
   const [filtroEspecialidade, setFiltroEspecialidade] = useState<string>('')
   const [viewMode, setViewMode] = useState<ViewMode>('lista')
@@ -211,7 +211,7 @@ export function AgendamentosPage() {
 
   function handleLimpar() {
     setFiltroStatus('')
-    setFiltroDataInicio('')
+    setFiltroDataInicio(formatDateForDateInput(new Date()))
     setFiltroDataFim('')
     setFiltroEspecialidade('')
     load()
