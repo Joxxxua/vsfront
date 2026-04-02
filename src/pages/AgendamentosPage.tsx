@@ -140,12 +140,15 @@ function isSameDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 }
 
-/** Data local no formato `YYYY-MM-DD` para `<input type="date">` e query `dataInicio`. */
-function formatDateForDateInput(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
+function startOfLocalDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+/** Compara o dia civil local do agendamento com hoje (oculta “ontem e antes” na lista principal). */
+function isAgendamentoDiaLocalHojeOuFuturo(dataIso: string): boolean {
+  const t = new Date(dataIso)
+  if (Number.isNaN(t.getTime())) return false
+  return startOfLocalDay(t).getTime() >= startOfLocalDay(new Date()).getTime()
 }
 
 type ViewMode = 'lista' | 'semanal'
@@ -157,18 +160,24 @@ export function AgendamentosPage() {
   const [success, setSuccess] = useState('')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [filtroStatus, setFiltroStatus] = useState<'' | StatusAgendamento>('')
-  const [filtroDataInicio, setFiltroDataInicio] = useState(() => formatDateForDateInput(new Date()))
+  const [filtroDataInicio, setFiltroDataInicio] = useState('')
   const [filtroDataFim, setFiltroDataFim] = useState('')
   const [filtroEspecialidade, setFiltroEspecialidade] = useState<string>('')
   const [viewMode, setViewMode] = useState<ViewMode>('lista')
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
   const [agendamentoDetalhe, setAgendamentoDetalhe] = useState<Agendamento | null>(null)
 
-  const especialidades = especialidadesFromAgendamentos(agendamentos)
+  const buscaPorPeriodoExplicito = Boolean(filtroDataInicio.trim())
+
+  const agendamentosVisiveis = buscaPorPeriodoExplicito
+    ? agendamentos
+    : agendamentos.filter((a) => isAgendamentoDiaLocalHojeOuFuturo(a.data))
+
+  const especialidades = especialidadesFromAgendamentos(agendamentosVisiveis)
 
   const filtros: ListarAgendamentosParams = {}
   if (filtroStatus) filtros.status = filtroStatus
-  filtros.dataInicio = filtroDataInicio || formatDateForDateInput(new Date())
+  if (filtroDataInicio) filtros.dataInicio = filtroDataInicio
   if (filtroDataFim) filtros.dataFim = filtroDataFim
   if (filtroEspecialidade) filtros.especialidade = filtroEspecialidade
 
@@ -211,7 +220,7 @@ export function AgendamentosPage() {
 
   function handleLimpar() {
     setFiltroStatus('')
-    setFiltroDataInicio(formatDateForDateInput(new Date()))
+    setFiltroDataInicio('')
     setFiltroDataFim('')
     setFiltroEspecialidade('')
     load()
@@ -234,13 +243,13 @@ export function AgendamentosPage() {
   }
 
   const agendamentosFiltrados = filtroEspecialidade
-    ? agendamentos.filter((a) => {
+    ? agendamentosVisiveis.filter((a) => {
         const medico = a.medico
         if (!medico || typeof medico !== 'object') return false
         const esp = (medico as MedicoResumo).especialidade
         return esp && String(esp).trim() === filtroEspecialidade
       })
-    : agendamentos
+    : agendamentosVisiveis
 
   const weekEnd = new Date(weekStart)
   weekEnd.setDate(weekEnd.getDate() + 7)
@@ -543,7 +552,13 @@ export function AgendamentosPage() {
       ) : agendamentos.length === 0 && !error ? (
         <p className="agendamentos-empty">Nenhum agendamento encontrado.</p>
       ) : agendamentosFiltrados.length === 0 ? (
-        <p className="agendamentos-empty">Nenhum agendamento para a especialidade selecionada.</p>
+        <p className="agendamentos-empty">
+          {filtroEspecialidade
+            ? 'Nenhum agendamento para a especialidade selecionada.'
+            : buscaPorPeriodoExplicito
+              ? 'Nenhum agendamento encontrado para o período.'
+              : 'Nenhum agendamento a partir de hoje.'}
+        </p>
       ) : (
         <section className="agendamentos-grid">
           {agendamentosFiltrados.map((agendamento) => (
