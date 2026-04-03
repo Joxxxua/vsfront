@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { DashboardLayout } from './components/DashboardLayout'
 import { LoginPage } from './pages/LoginPage'
 import { AgendamentosPage } from './pages/AgendamentosPage'
+import { PerfilPage } from './pages/PerfilPage'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage'
 import './App.css'
 
@@ -23,6 +24,7 @@ function App() {
             }
           >
             <Route index element={<AgendamentosPage />} />
+            <Route path="perfil" element={<PerfilPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -1,4 +1,4 @@
-import { setTokens, clearAuth } from '../lib/auth'
+import { setTokens, clearAuth, setSessionEmail } from '../lib/auth'
 import { ApiError } from '../lib/api'
 import type { LoginCredentials, AuthResponse } from '../types'
 
@@ -27,6 +27,7 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
   const data = (await res.json()) as AuthResponse
   if (data?.access_token) {
     setTokens(data.access_token, data.refresh_token)
+    setSessionEmail(credentials.email)
   }
   return data
 }

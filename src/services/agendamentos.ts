@@ -17,8 +17,13 @@ export async function listarAgendamentos(
   params?: ListarAgendamentosParams
 ): Promise<Agendamento[]> {
   const query = params ? buildQuery(params) : ''
-  const data = await api.get<Agendamento[]>(`/agendamento${query}`)
-  return Array.isArray(data) ? data : []
+  const raw = await api.get<unknown>(`/agendamento${query}`)
+  if (Array.isArray(raw)) return raw as Agendamento[]
+  // suporte a resposta paginada { data: [...] }
+  if (raw && typeof raw === 'object' && 'data' in raw && Array.isArray((raw as { data: unknown }).data)) {
+    return (raw as { data: Agendamento[] }).data
+  }
+  return []
 }
 
 export async function getAgendamento(id: string): Promise<Agendamento> {

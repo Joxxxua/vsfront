@@ -151,6 +151,48 @@ function isAgendamentoDiaLocalHojeOuFuturo(dataIso: string): boolean {
   return startOfLocalDay(t).getTime() >= startOfLocalDay(new Date()).getTime()
 }
 
+/** Interpreta `YYYY-MM-DD` do `<input type="date">` como início do dia no fuso local. */
+function startOfDayFromDateInput(yyyyMmDd: string): Date | null {
+  const s = yyyyMmDd.trim()
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s)
+  if (!m) return null
+  const y = Number(m[1])
+  const mo = Number(m[2]) - 1
+  const d = Number(m[3])
+  const dt = new Date(y, mo, d)
+  if (dt.getFullYear() !== y || dt.getMonth() !== mo || dt.getDate() !== d) return null
+  return dt
+}
+
+/** Filtro de datas só no front: a API costuma falhar ou esvaziar com `dataInicio`/`dataFim`. */
+function agendamentoPassaFiltroDatas(
+  dataIso: string,
+  filtroInicio: string,
+  filtroFim: string
+): boolean {
+  const t = new Date(dataIso)
+  if (Number.isNaN(t.getTime())) return false
+  const diaAg = startOfLocalDay(t)
+  const temInicio = Boolean(filtroInicio.trim())
+  const temFim = Boolean(filtroFim.trim())
+
+  if (!temInicio && !temFim) {
+    return isAgendamentoDiaLocalHojeOuFuturo(dataIso)
+  }
+  if (temInicio) {
+    const d0 = startOfDayFromDateInput(filtroInicio)
+    if (d0 && diaAg.getTime() < d0.getTime()) return false
+  } else {
+    const hoje = startOfLocalDay(new Date())
+    if (diaAg.getTime() < hoje.getTime()) return false
+  }
+  if (temFim) {
+    const d1 = startOfDayFromDateInput(filtroFim)
+    if (d1 && diaAg.getTime() > d1.getTime()) return false
+  }
+  return true
+}
+
 type ViewMode = 'lista' | 'semanal'
 
 export function AgendamentosPage() {
@@ -167,28 +209,23 @@ export function AgendamentosPage() {
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
   const [agendamentoDetalhe, setAgendamentoDetalhe] = useState<Agendamento | null>(null)
 
-  const buscaPorPeriodoExplicito = Boolean(filtroDataInicio.trim())
+  const temFiltroDataNoFormulario = Boolean(filtroDataInicio.trim() || filtroDataFim.trim())
 
-  const agendamentosVisiveis = buscaPorPeriodoExplicito
-    ? agendamentos
-    : agendamentos.filter((a) => isAgendamentoDiaLocalHojeOuFuturo(a.data))
+  const agendamentosVisiveis = agendamentos.filter((a) =>
+    agendamentoPassaFiltroDatas(a.data, filtroDataInicio, filtroDataFim)
+  )
 
   const especialidades = especialidadesFromAgendamentos(agendamentosVisiveis)
 
-  const filtros: ListarAgendamentosParams = {}
-  if (filtroStatus) filtros.status = filtroStatus
-  if (filtroDataInicio) filtros.dataInicio = filtroDataInicio
-  if (filtroDataFim) filtros.dataFim = filtroDataFim
-  if (filtroEspecialidade) filtros.especialidade = filtroEspecialidade
-
-  async function fetchList(withLoading: boolean) {
+  async function fetchList(
+    withLoading: boolean,
+    params?: ListarAgendamentosParams
+  ) {
     setError('')
     setSuccess('')
     if (withLoading) setLoading(true)
     try {
-      const list = await listarAgendamentos(
-        Object.keys(filtros).length > 0 ? filtros : undefined
-      )
+      const list = await listarAgendamentos(params)
       setAgendamentos(list)
     } catch (err) {
       setError(
@@ -202,20 +239,26 @@ export function AgendamentosPage() {
     }
   }
 
-  async function load() {
-    await fetchList(true)
+  function buildFiltros(
+    status: '' | StatusAgendamento,
+    especialidade: string
+  ): ListarAgendamentosParams | undefined {
+    const f: ListarAgendamentosParams = {}
+    if (status) f.status = status
+    if (especialidade) f.especialidade = especialidade
+    return Object.keys(f).length > 0 ? f : undefined
   }
 
   async function reloadList() {
-    await fetchList(false)
+    await fetchList(false, buildFiltros(filtroStatus, filtroEspecialidade))
   }
 
   useEffect(() => {
-    load()
+    void fetchList(true)
   }, [])
 
   function handleBuscar() {
-    load()
+    void fetchList(true, buildFiltros(filtroStatus, filtroEspecialidade))
   }
 
   function handleLimpar() {
@@ -223,7 +266,7 @@ export function AgendamentosPage() {
     setFiltroDataInicio('')
     setFiltroDataFim('')
     setFiltroEspecialidade('')
-    load()
+    void fetchList(true)  // sem filtros — estados já limpos para o próximo render
   }
 
   function goToToday() {
@@ -555,8 +598,8 @@ export function AgendamentosPage() {
         <p className="agendamentos-empty">
           {filtroEspecialidade
             ? 'Nenhum agendamento para a especialidade selecionada.'
-            : buscaPorPeriodoExplicito
-              ? 'Nenhum agendamento encontrado para o período.'
+            : temFiltroDataNoFormulario
+              ? 'Nenhum agendamento para o período selecionado.'
               : 'Nenhum agendamento a partir de hoje.'}
         </p>
       ) : (
