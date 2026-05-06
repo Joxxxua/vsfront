@@ -517,19 +517,20 @@
   opacity: 0.9;
 }
 
-/* Agenda Semanal grid - estilo matriz (#) */
+/* Agenda Semanal grid */
 .agenda-semanal-grid-wrap {
   overflow: auto;
-  max-height: 65vh;
+  max-height: 68vh;
   background: var(--color-surface);
-  border: 2px solid #94a3b8;
-  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
 }
 
 .agenda-semanal-grid {
   display: grid;
   grid-template-columns: 56px repeat(7, minmax(0, 1fr));
-  grid-template-rows: 52px repeat(14, 48px);
+  grid-template-rows: 48px repeat(14, 52px);
   min-width: 640px;
   position: relative;
 }
@@ -539,25 +540,26 @@
   grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
-  border-right: 2px solid #94a3b8;
-  background: var(--color-surface-muted);
+  border-right: 1px solid var(--border-color);
+  background: var(--color-surface);
 }
 
 .agenda-corner {
-  flex: 0 0 52px;
-  border-bottom: 2px solid #94a3b8;
+  flex: 0 0 48px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .agenda-time-slot {
-  flex: 0 0 48px;
-  min-height: 48px;
+  flex: 0 0 52px;
+  min-height: 52px;
   box-sizing: border-box;
-  padding: 0 0.5rem;
+  padding: 5px 8px 0;
   display: flex;
-  align-items: center;
-  font-size: 0.875rem;
+  align-items: flex-start;
+  font-size: 0.6875rem;
+  font-weight: 500;
   color: var(--color-text-muted);
-  border-bottom: 1px solid #94a3b8;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .agenda-days-col {
@@ -565,13 +567,13 @@
   grid-row: 1 / -1;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: 52px repeat(14, 48px);
+  grid-template-rows: 48px repeat(14, 52px);
 }
 
 .agenda-day-col {
   display: flex;
   flex-direction: column;
-  border-right: 2px solid #94a3b8;
+  border-right: 1px solid var(--border-color);
 }
 
 .agenda-day-col:last-child {
@@ -579,48 +581,51 @@
 }
 
 .agenda-day-header {
-  flex: 0 0 52px;
+  flex: 0 0 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.15rem;
-  border-bottom: 2px solid #94a3b8;
-  background: var(--color-surface-muted);
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
+  gap: 2px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--color-surface);
+}
+
+.agenda-day-header.is-today {
+  background: var(--color-primary-light);
 }
 
 .agenda-day-header.is-today .agenda-day-num {
   background: var(--color-primary);
   color: #fff;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .agenda-day-name {
-  font-size: 0.8125rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
 }
 
 .agenda-day-num {
   font-size: 0.9375rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text);
 }
 
 .agenda-cell {
-  flex: 0 0 48px;
-  min-height: 48px;
+  flex: 0 0 52px;
+  min-height: 52px;
   box-sizing: border-box;
-  border-bottom: 1px solid #94a3b8;
-  border-right: 1px solid #94a3b8;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .agenda-day-col:last-child .agenda-cell {
@@ -641,83 +646,105 @@
 .agenda-block {
   position: absolute;
   margin: 0;
-  padding: 0.35rem 0.45rem;
-  border-radius: 6px;
-  overflow: visible;
+  padding: 3px 6px;
+  border-radius: 4px;
+  border-left-width: 3px;
+  border-left-style: solid;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
+  gap: 1px;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, min-height 0.2s ease, padding 0.2s ease;
-  min-height: 2rem;
+  transition: box-shadow 0.15s ease;
   z-index: 1;
-  transform-origin: center center;
 }
 
 .agenda-block:hover {
-  transform: scale(1.45);
-  box-shadow: 0 8px 24px rgba(15, 53, 27, 0.22);
-  z-index: 10;
-  min-height: 5rem;
-  padding: 0.6rem 0.75rem;
+  overflow: visible;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+  z-index: 20;
 }
 
 .agenda-block.status-AGENDADO {
-  background: #dbeafe;
-  color: #1e40af;
-  border: 1px solid #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #3b82f6;
 }
 
 .agenda-block.status-CONFIRMADO {
   background: var(--color-primary-light);
   color: var(--color-primary-dark);
-  border: 1px solid var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .agenda-block.status-REALIZADO {
-  background: #dcfce7;
-  color: #166534;
-  border: 1px solid #86efac;
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #22c55e;
 }
 
 .agenda-block.status-CANCELADO {
-  background: #fee2e2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #be123c;
+  border-color: #fb7185;
 }
 
 .agenda-block-time {
-  font-size: 0.875rem;
-  font-weight: 600;
-  opacity: 0.95;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   flex-shrink: 0;
 }
 
-.agenda-block:hover .agenda-block-time {
-  font-size: 0.9375rem;
+.agenda-block-tooltip {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 180px;
+  max-width: 240px;
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 21;
 }
 
-.agenda-block-expand {
+.agenda-block:hover .agenda-block-tooltip {
+  display: flex;
+}
+
+.agenda-block-tooltip-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.agenda-block-tooltip-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.agenda-block-tooltip-value {
   font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.35;
-  opacity: 0;
-  max-height: 0;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
   overflow: hidden;
-  white-space: normal;
-  text-align: center;
-  word-break: break-word;
-  min-width: 0;
-  transition: opacity 0.2s ease, max-height 0.2s ease;
-}
-
-.agenda-block:hover .agenda-block-expand {
-  opacity: 1;
-  max-height: 3em;
-  overflow: visible;
+  text-overflow: ellipsis;
 }
 
 /* Modal de detalhes ao clicar no bloco da agenda */

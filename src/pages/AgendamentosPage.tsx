@@ -551,8 +551,8 @@ export function AgendamentosPage() {
                   const slotTop = (slotIndex / totalSlots) * 100
                   const slotHeight = (duration / totalSlots) * 100
                   const colWidth = 100 / 7
-                  const insetV = 12
-                  const insetH = 8
+                  const insetV = 5
+                  const insetH = 3
                   const blockTop = slotTop + (slotHeight * insetV) / 100
                   const blockHeight = slotHeight * (100 - 2 * insetV) / 100
                   const blockLeft = (100 * dayIndex) / 7 + (colWidth * insetH) / 100
@@ -582,9 +582,17 @@ export function AgendamentosPage() {
                         }
                       }}
                     >
-                      <span className="agenda-block-time">{startStr} - {endStr}</span>
-                      <span className="agenda-block-expand">Paciente: {displayUserName(agendamento.user)}</span>
-                      <span className="agenda-block-expand">Médico: {displayMedicoName(agendamento.medico)}</span>
+                      <span className="agenda-block-time">{startStr} – {endStr}</span>
+                      <div className="agenda-block-tooltip">
+                        <div className="agenda-block-tooltip-row">
+                          <span className="agenda-block-tooltip-label">Paciente</span>
+                          <span className="agenda-block-tooltip-value">{displayUserName(agendamento.user)}</span>
+                        </div>
+                        <div className="agenda-block-tooltip-row">
+                          <span className="agenda-block-tooltip-label">Médico</span>
+                          <span className="agenda-block-tooltip-value">{displayMedicoName(agendamento.medico)}</span>
+                        </div>
+                      </div>
                     </div>
                   )
                 })}
